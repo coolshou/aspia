@@ -1,0 +1,24 @@
+Source: aspia
+Section: unknown
+Priority: optional
+Maintainer: jimmy <jimmy@jimmy-alpha>
+Build-Depends: debhelper-compat (= 12), cmake (>=3.13), qtbase5-dev (>=5.12), libasio-dev (>=1.14),
+    googletest (>=1.8.1),  libvpx-dev (>=1.8.1), libssl-dev(>=1.1.1c), libprotobuf-dev (>=3.6.1),
+    librapidxml-dev (>=1.13), libtbb-dev (>=2019~U8), libmkl-tbb-thread (>=2019.4), zstd (>=1.4.3),
+    qttools5-dev
+Standards-Version: 4.4.0
+Homepage: https://github.com/dchapyshev/aspia
+#Vcs-Browser: https://github.com/dchapyshev/aspia
+#Vcs-Git: https://github.com/dchapyshev/aspia.git
+
+Package: aspia-console
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Aspia Console
+ Aspia Console
+
+Package: aspia-host
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Aspia Host
+ Aspia Host

@@ -19,7 +19,9 @@
 #ifndef BASE__MESSAGE_LOOP__MESSAGE_PUMP_DISPATCHER_H
 #define BASE__MESSAGE_LOOP__MESSAGE_PUMP_DISPATCHER_H
 
+#ifdef Q_OS_WIN
 #include <Windows.h>
+#endif
 
 namespace base {
 

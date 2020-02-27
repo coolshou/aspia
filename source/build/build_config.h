@@ -19,9 +19,15 @@
 #ifndef ASPIA_BUILD_CONFIG_H
 #define ASPIA_BUILD_CONFIG_H
 
+#ifndef QGLOBAL_H
+    #include <QtCore/QtGlobal>
+#endif
+
 // OS detection.
 #if defined(_WIN32)
 #define OS_WIN
+#elif defined(Q_OS_LINUX)
+#define OS_POSIX
 #else
 #error Unknown OS
 #endif
