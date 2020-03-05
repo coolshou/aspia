@@ -62,8 +62,6 @@ list(APPEND SOURCE_CLIENT
     file_transfer_window_proxy.cc
     file_transfer_window_proxy.h
     frame_factory.h
-    frame_factory_qimage.cc
-    frame_factory_qimage.h
     status_window.h
     status_window_proxy.cc
     status_window_proxy.h)
@@ -82,6 +80,8 @@ list(APPEND SOURCE_CLIENT_UI
     ui/client_dialog.cc
     ui/client_dialog.h
     ui/client_dialog.ui
+    ui/client_settings.cc
+    ui/client_settings.h
     ui/client_window.cc
     ui/client_window.h
     ui/desktop_config_dialog.cc
@@ -119,6 +119,10 @@ list(APPEND SOURCE_CLIENT_UI
     ui/file_transfer_dialog.cc
     ui/file_transfer_dialog.h
     ui/file_transfer_dialog.ui
+    ui/frame_factory_qimage.cc
+    ui/frame_factory_qimage.h
+    ui/frame_qimage.cc
+    ui/frame_qimage.h
     ui/qt_desktop_window.cc
     ui/qt_desktop_window.h
     ui/qt_file_manager_window.cc

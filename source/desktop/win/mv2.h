@@ -16,34 +16,42 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 //
 
-#ifndef DESKTOP__MIRROR_HELPER_H
-#define DESKTOP__MIRROR_HELPER_H
+#ifndef DESKTOP__WIN__MV2_H
+#define DESKTOP__WIN__MV2_H
 
-#include "desktop/desktop_geometry.h"
-
-#include <string>
+#include <cstdint>
 
 namespace desktop {
 
-class Frame;
-class Region;
+static const int kMv2MaxChanges = 2000;
 
-class MirrorHelper
+typedef struct
 {
-public:
-    virtual ~MirrorHelper() = default;
+    long left;
+    long top;
+    long right;
+    long bottom;
+} Mv2Rect;
 
-    virtual const Rect& screenRect() const = 0;
-    virtual void addUpdatedRects(Region* updated_region) const = 0;
-    virtual void copyRegion(Frame* frame, const Region& updated_region) const = 0;
+typedef struct
+{
+    long x;
+    long y;
+} Mv2Point;
 
-protected:
-    static bool findDisplayDevice(std::wstring_view device_string,
-                                  std::wstring* device_name,
-                                  std::wstring* device_key);
-    static bool attachToDesktop(std::wstring_view key_path, bool attach);
-};
+typedef struct
+{
+    uint32_t type;
+    Mv2Rect rect;
+    Mv2Point point;
+} Mv2ChangesRecord;
 
-} // namespace desktop
+typedef struct
+{
+    uint32_t counter;
+    Mv2ChangesRecord records[kMv2MaxChanges];
+} Mv2ChangesBuffer;
 
-#endif // DESKTOP__MIRROR_HELPER_H
+} // desktop
+
+#endif // DESKTOP__WIN__MV2_H

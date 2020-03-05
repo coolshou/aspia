@@ -33,6 +33,8 @@
 
 #include <functional>
 
+#include <psapi.h>
+
 namespace ipc {
 
 namespace {
@@ -67,27 +69,27 @@ base::ProcessId serverProcessIdImpl(HANDLE pipe_handle)
     return process_id;
 }
 
-base::win::SessionId clientSessionIdImpl(HANDLE pipe_handle)
+base::SessionId clientSessionIdImpl(HANDLE pipe_handle)
 {
-    ULONG session_id = base::win::kInvalidSessionId;
+    ULONG session_id = base::kInvalidSessionId;
 
     if (!GetNamedPipeClientSessionId(pipe_handle, &session_id))
     {
         PLOG(LS_WARNING) << "GetNamedPipeClientSessionId failed";
-        return base::win::kInvalidSessionId;
+        return base::kInvalidSessionId;
     }
 
     return session_id;
 }
 
-base::win::SessionId serverSessionIdImpl(HANDLE pipe_handle)
+base::SessionId serverSessionIdImpl(HANDLE pipe_handle)
 {
-    ULONG session_id = base::win::kInvalidSessionId;
+    ULONG session_id = base::kInvalidSessionId;
 
     if (!GetNamedPipeServerSessionId(pipe_handle, &session_id))
     {
         PLOG(LS_WARNING) << "GetNamedPipeServerSessionId failed";
-        return base::win::kInvalidSessionId;
+        return base::kInvalidSessionId;
     }
 
     return session_id;
@@ -160,7 +162,7 @@ bool Channel::connect(std::u16string_view channel_id)
         if (error_code != ERROR_PIPE_BUSY)
         {
             LOG(LS_WARNING) << "Failed to connect to the named pipe: "
-                            << base::SystemError(error_code).toString();
+                            << base::SystemError::toString(error_code);
             return false;
         }
 
@@ -246,6 +248,27 @@ void Channel::send(base::ByteArray&& buffer)
 
     if (schedule_write)
         doWrite();
+}
+
+std::filesystem::path Channel::peerFilePath() const
+{
+    base::win::ScopedHandle process(
+        OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, peer_process_id_));
+    if (!process.isValid())
+    {
+        PLOG(LS_WARNING) << "OpenProcess failed";
+        return std::filesystem::path();
+    }
+
+    wchar_t buffer[MAX_PATH] = { 0 };
+
+    if (!GetModuleFileNameExW(process.get(), nullptr, buffer, std::size(buffer)))
+    {
+        PLOG(LS_WARNING) << "GetModuleFileNameExW failed";
+        return std::filesystem::path();
+    }
+
+    return buffer;
 }
 
 // static

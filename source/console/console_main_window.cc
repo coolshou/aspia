@@ -29,6 +29,7 @@
 #include "common/ui/language_action.h"
 #include "console/address_book_tab.h"
 #include "console/console_application.h"
+#include "console/mru_action.h"
 #include "console/update_settings_dialog.h"
 #include "updater/update_dialog.h"
 
@@ -40,25 +41,6 @@
 
 namespace console {
 
-namespace {
-
-class MruAction : public QAction
-{
-public:
-    MruAction(const QString& file, QObject* parent = nullptr)
-        : QAction(file, parent)
-    {
-        // Nothing
-    }
-
-    QString filePath() const { return text(); }
-
-private:
-    DISALLOW_COPY_AND_ASSIGN(MruAction);
-};
-
-} // namespace
-
 MainWindow::MainWindow(const QString& file_path)
 {
     Settings& settings = Application::instance()->settings();
@@ -67,7 +49,10 @@ MainWindow::MainWindow(const QString& file_path)
 
     createLanguageMenu(settings.locale());
 
-    mru_.setRecentOpen(settings.recentOpen());
+    bool enable_recent_open = settings.isRecentOpenEnabled();
+    ui.action_remember_last->setChecked(enable_recent_open);
+    if (enable_recent_open)
+        mru_.setRecentOpen(settings.recentOpen());
     mru_.setPinnedFiles(settings.pinnedFiles());
 
     rebuildMruMenu();
@@ -83,14 +68,7 @@ MainWindow::MainWindow(const QString& file_path)
     ui.status_bar->setVisible(ui.action_statusbar->isChecked());
     showTrayIcon(ui.action_show_tray_icon->isChecked());
 
-    connect(ui.menu_recent_open, &QMenu::triggered, [this](QAction* action)
-    {
-        MruAction* mru_action = dynamic_cast<MruAction*>(action);
-        if (!mru_action)
-            return;
-
-        openAddressBook(mru_action->filePath());
-    });
+    connect(ui.menu_recent_open, &QMenu::triggered, this, &MainWindow::onRecentOpenTriggered);
 
     QTabBar* tab_bar = ui.tab_widget->tabBar();
     tab_bar->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -293,8 +271,11 @@ void MainWindow::onSave()
     AddressBookTab* tab = currentAddressBookTab();
     if (tab && tab->save())
     {
-        if (mru_.addRecentFile(tab->filePath()))
-            rebuildMruMenu();
+        if (Application::instance()->settings().isRecentOpenEnabled())
+        {
+            if (mru_.addRecentFile(tab->filePath()))
+                rebuildMruMenu();
+        }
 
         if (!hasChangedTabs())
             ui.action_save_all->setEnabled(false);
@@ -312,18 +293,24 @@ void MainWindow::onSaveAs()
             QScopedPointer<AddressBookTab> duplicate_tab(tab->duplicateTab());
             if (duplicate_tab->saveAs())
             {
-                const QString& new_path = duplicate_tab->filePath();
-                if (mru_.addRecentFile(new_path))
-                    rebuildMruMenu();
+                if (Application::instance()->settings().isRecentOpenEnabled())
+                {
+                    const QString& new_path = duplicate_tab->filePath();
+                    if (mru_.addRecentFile(new_path))
+                        rebuildMruMenu();
+                }
 
                 addAddressBookTab(duplicate_tab.take());
             }
         }
         else if (tab->saveAs())
         {
-            const QString& new_path = tab->filePath();
-            if (mru_.addRecentFile(new_path))
-                rebuildMruMenu();
+            if (Application::instance()->settings().isRecentOpenEnabled())
+            {
+                const QString& new_path = tab->filePath();
+                if (mru_.addRecentFile(new_path))
+                    rebuildMruMenu();
+            }
         }
 
         if (!hasChangedTabs())
@@ -804,6 +791,45 @@ void MainWindow::onLanguageChanged(QAction* action)
 
     for (int i = 0; i < ui.tab_widget->count(); ++i)
         static_cast<AddressBookTab*>(ui.tab_widget->widget(i))->retranslateUi();
+
+    rebuildMruMenu();
+}
+
+void MainWindow::onRecentOpenTriggered(QAction* action)
+{
+    if (action == ui.action_clear_mru ||
+        (action == ui.action_remember_last && !action->isChecked()))
+    {
+        int ret = QMessageBox(
+            QMessageBox::Question,
+            tr("Confirmation"),
+            tr("The list of recently opened address books will be cleared. Continue?"),
+            QMessageBox::Yes | QMessageBox::No,
+            this).exec();
+        if (ret == QMessageBox::Yes)
+        {
+            mru_.clearRecentOpen();
+            rebuildMruMenu();
+        }
+
+        Application::instance()->settings().setRecentOpenEnabled(action->isChecked());
+    }
+    else if (action == ui.action_remember_last)
+    {
+        Application::instance()->settings().setRecentOpenEnabled(true);
+    }
+    else
+    {
+        MruAction* mru_action = dynamic_cast<MruAction*>(action);
+        if (!mru_action)
+            return;
+
+        QString file_path = mru_action->filePath();
+        if (file_path.isEmpty())
+            return;
+
+        openAddressBook(file_path);
+    }
 }
 
 void MainWindow::onShowHideToTray()
@@ -882,6 +908,8 @@ void MainWindow::closeEvent(QCloseEvent* event)
     settings.setMinimizeToTray(ui.action_minimize_to_tray->isChecked());
     settings.setWindowGeometry(saveGeometry());
     settings.setWindowState(saveState());
+
+    settings.setRecentOpenEnabled(ui.action_remember_last->isChecked());
     settings.setRecentOpen(mru_.recentOpen());
     settings.setPinnedFiles(mru_.pinnedFiles());
 
@@ -928,15 +956,18 @@ void MainWindow::createLanguageMenu(const QString& current_locale)
 
 void MainWindow::rebuildMruMenu()
 {
-    ui.menu_recent_open->clear();
+    for (QAction* action : ui.menu_recent_open->actions())
+    {
+        MruAction* mru_action = dynamic_cast<MruAction*>(action);
+        if (mru_action)
+            ui.menu_recent_open->removeAction(action);
+    }
 
     const QStringList file_list = mru_.recentOpen();
 
     if (file_list.isEmpty())
     {
-        QAction* action = new QAction(tr("<empty>"), ui.menu_recent_open);
-        action->setEnabled(false);
-        ui.menu_recent_open->addAction(action);
+        ui.menu_recent_open->addAction(new MruAction(QString(), ui.menu_recent_open));
     }
     else
     {
@@ -981,8 +1012,12 @@ void MainWindow::addAddressBookTab(AddressBookTab* new_tab)
         return;
 
     const QString& file_path = new_tab->filePath();
-    if (mru_.addRecentFile(file_path))
-        rebuildMruMenu();
+
+    if (Application::instance()->settings().isRecentOpenEnabled())
+    {
+        if (mru_.addRecentFile(file_path))
+            rebuildMruMenu();
+    }
 
     connect(new_tab, &AddressBookTab::addressBookChanged,
             this, &MainWindow::onAddressBookChanged);
@@ -1094,7 +1129,8 @@ void MainWindow::connectToComputer(const proto::address_book::Computer& computer
         return;
 
     client_window->setAttribute(Qt::WA_DeleteOnClose);
-    client_window->connectToHost(config);
+    if (!client_window->connectToHost(config))
+        client_window->close();
 }
 
 } // namespace console

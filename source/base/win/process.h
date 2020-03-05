@@ -20,9 +20,9 @@
 #define BASE__WIN__PROCESS_H
 
 #include "base/process_handle.h"
+#include "base/session_id.h"
 #include "base/win/object_watcher.h"
 #include "base/win/scoped_object.h"
-#include "base/win/session_id.h"
 
 #include <filesystem>
 #include <functional>
@@ -32,8 +32,8 @@ namespace base::win {
 class Process : public ObjectWatcher::Delegate
 {
 public:
-    Process(std::shared_ptr<TaskRunner>& task_runner, ProcessId process_id);
-    Process(std::shared_ptr<TaskRunner>& task_runner, HANDLE process, HANDLE thread);
+    Process(std::shared_ptr<TaskRunner> task_runner, ProcessId process_id);
+    Process(std::shared_ptr<TaskRunner> task_runner, HANDLE process, HANDLE thread);
     ~Process();
 
     using ExitCallback = std::function<void(int exit_code)>;

@@ -19,14 +19,15 @@
 #ifndef IPC__IPC_CHANNEL_H
 #define IPC__IPC_CHANNEL_H
 
-#include "base/macros_magic.h"
 #include "base/process_handle.h"
+#include "base/session_id.h"
 #include "base/memory/byte_array.h"
 #include "base/memory/scalable_queue.h"
 #include "base/threading/thread_checker.h"
-#include "base/win/session_id.h"
 
 #include <asio/windows/stream_handle.hpp>
+
+#include <filesystem>
 
 namespace base {
 class Location;
@@ -64,7 +65,8 @@ public:
     void send(base::ByteArray&& buffer);
 
     base::ProcessId peerProcessId() const { return peer_process_id_; }
-    base::win::SessionId peerSessionId() const { return peer_session_id_; }
+    base::SessionId peerSessionId() const { return peer_session_id_; }
+    std::filesystem::path peerFilePath() const;
 
 private:
     friend class Server;
@@ -94,7 +96,7 @@ private:
     base::ByteArray read_buffer_;
 
     base::ProcessId peer_process_id_ = base::kNullProcessId;
-    base::win::SessionId peer_session_id_ = base::win::kInvalidSessionId;
+    base::SessionId peer_session_id_ = base::kInvalidSessionId;
 
     THREAD_CHECKER(thread_checker_);
 

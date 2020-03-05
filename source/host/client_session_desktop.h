@@ -23,9 +23,11 @@
 #include "host/client_session.h"
 #include "proto/desktop.pb.h"
 #include "proto/desktop_extensions.pb.h"
+#include "proto/desktop_internal.pb.h"
 
 namespace codec {
 class CursorEncoder;
+class VideoEncoder;
 } // namespace codec
 
 namespace desktop {
@@ -36,7 +38,6 @@ class MouseCursor;
 namespace host {
 
 class DesktopSessionProxy;
-class VideoFramePump;
 
 class ClientSessionDesktop : public ClientSession
 {
@@ -51,6 +52,8 @@ public:
     void setScreenList(const proto::ScreenList& list);
     void injectClipboardEvent(const proto::ClipboardEvent& event);
 
+    const proto::internal::EnableFeatures& features() const { return features_; }
+
 protected:
     // net::Listener implementation.
     void onMessageReceived(const base::ByteArray& buffer) override;
@@ -64,9 +67,12 @@ private:
     void readConfig(const proto::DesktopConfig& config);
 
     std::shared_ptr<DesktopSessionProxy> desktop_session_proxy_;
-    std::unique_ptr<VideoFramePump> frame_pump_;
+    std::unique_ptr<codec::VideoEncoder> video_encoder_;
     std::unique_ptr<codec::CursorEncoder> cursor_encoder_;
-    std::vector<std::string> extensions_;
+    proto::internal::EnableFeatures features_;
+
+    proto::ClientToHost incoming_message_;
+    proto::HostToClient outgoing_message_;
 
     DISALLOW_COPY_AND_ASSIGN(ClientSessionDesktop);
 };

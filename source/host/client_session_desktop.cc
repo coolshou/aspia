@@ -19,7 +19,6 @@
 #include "host/client_session_desktop.h"
 
 #include "base/power_controller.h"
-#include "base/strings/string_split.h"
 #include "codec/cursor_encoder.h"
 #include "codec/video_encoder_vpx.h"
 #include "codec/video_encoder_zstd.h"
@@ -29,7 +28,6 @@
 #include "desktop/desktop_frame.h"
 #include "host/desktop_session_proxy.h"
 #include "host/host_system_info.h"
-#include "host/video_frame_pump.h"
 #include "host/win/updater_launcher.h"
 #include "net/network_channel.h"
 #include "proto/desktop_internal.pb.h"
@@ -54,33 +52,33 @@ void ClientSessionDesktop::setDesktopSessionProxy(
 
 void ClientSessionDesktop::onMessageReceived(const base::ByteArray& buffer)
 {
-    proto::ClientToHost message;
+    incoming_message_.Clear();
 
-    if (!common::parseMessage(buffer, &message))
+    if (!common::parseMessage(buffer, &incoming_message_))
     {
         LOG(LS_ERROR) << "Invalid message from client";
         return;
     }
 
-    if (message.has_pointer_event())
+    if (incoming_message_.has_pointer_event())
     {
-        desktop_session_proxy_->injectPointerEvent(message.pointer_event());
+        desktop_session_proxy_->injectPointerEvent(incoming_message_.pointer_event());
     }
-    else if (message.has_key_event())
+    else if (incoming_message_.has_key_event())
     {
-        desktop_session_proxy_->injectKeyEvent(message.key_event());
+        desktop_session_proxy_->injectKeyEvent(incoming_message_.key_event());
     }
-    else if (message.has_clipboard_event())
+    else if (incoming_message_.has_clipboard_event())
     {
-        desktop_session_proxy_->injectClipboardEvent(message.clipboard_event());
+        desktop_session_proxy_->injectClipboardEvent(incoming_message_.clipboard_event());
     }
-    else if (message.has_extension())
+    else if (incoming_message_.has_extension())
     {
-        readExtension(message.extension());
+        readExtension(incoming_message_.extension());
     }
-    else if (message.has_config())
+    else if (incoming_message_.has_config())
     {
-        readConfig(message.config());
+        readConfig(incoming_message_.config());
     }
     else
     {
@@ -109,26 +107,29 @@ void ClientSessionDesktop::onStarted()
         extensions = common::kSupportedExtensionsForView;
     }
 
-    // Add supported extensions to the list.
-    extensions_ = base::splitString(extensions, ";", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
-
-    proto::HostToClient message;
-
     // Create a configuration request.
-    proto::DesktopConfigRequest* request = message.mutable_config_request();
+    proto::DesktopConfigRequest* request = outgoing_message_.mutable_config_request();
 
     // Add supported extensions and video encodings.
     request->set_extensions(extensions);
     request->set_video_encodings(common::kSupportedVideoEncodings);
 
     // Send the request.
-    sendMessage(common::serializeMessage(message));
+    sendMessage(common::serializeMessage(outgoing_message_));
 }
 
 void ClientSessionDesktop::encodeFrame(const desktop::Frame& frame)
 {
-    if (frame_pump_)
-        frame_pump_->encodeFrame(frame);
+    if (!video_encoder_)
+        return;
+
+    outgoing_message_.Clear();
+    proto::VideoPacket* packet = outgoing_message_.mutable_video_packet();
+
+    // Encode the frame into a video packet.
+    video_encoder_->encode(&frame, packet);
+
+    sendMessage(common::serializeMessage(outgoing_message_));
 }
 
 void ClientSessionDesktop::encodeMouseCursor(std::shared_ptr<desktop::MouseCursor> mouse_cursor)
@@ -136,48 +137,33 @@ void ClientSessionDesktop::encodeMouseCursor(std::shared_ptr<desktop::MouseCurso
     if (!cursor_encoder_)
         return;
 
-    proto::HostToClient message;
-    if (cursor_encoder_->encode(std::move(mouse_cursor), message.mutable_cursor_shape()))
-        sendMessage(common::serializeMessage(message));
+    outgoing_message_.Clear();
+
+    if (cursor_encoder_->encode(std::move(mouse_cursor), outgoing_message_.mutable_cursor_shape()))
+        sendMessage(common::serializeMessage(outgoing_message_));
 }
 
 void ClientSessionDesktop::setScreenList(const proto::ScreenList& list)
 {
-    proto::HostToClient message;
+    outgoing_message_.Clear();
 
-    proto::DesktopExtension* extension = message.mutable_extension();
+    proto::DesktopExtension* extension = outgoing_message_.mutable_extension();
     extension->set_name(common::kSelectScreenExtension);
     extension->set_data(list.SerializeAsString());
 
-    sendMessage(common::serializeMessage(message));
+    sendMessage(common::serializeMessage(outgoing_message_));
 }
 
 void ClientSessionDesktop::injectClipboardEvent(const proto::ClipboardEvent& event)
 {
-    proto::HostToClient message;
-    message.mutable_clipboard_event()->CopyFrom(event);
-    sendMessage(common::serializeMessage(message));
+    outgoing_message_.Clear();
+
+    outgoing_message_.mutable_clipboard_event()->CopyFrom(event);
+    sendMessage(common::serializeMessage(outgoing_message_));
 }
 
 void ClientSessionDesktop::readExtension(const proto::DesktopExtension& extension)
 {
-    bool extension_found = false;
-
-    for (const auto& item : extensions_)
-    {
-        if (item == extension.name())
-        {
-            extension_found = true;
-            break;
-        }
-    }
-
-    if (!extension_found)
-    {
-        DLOG(LS_WARNING) << "Unsupported or disabled extensions: " << extension.name();
-        return;
-    }
-
     if (extension.name() == common::kSelectScreenExtension)
     {
         proto::Screen screen;
@@ -211,11 +197,13 @@ void ClientSessionDesktop::readExtension(const proto::DesktopExtension& extensio
                 break;
 
             case proto::PowerControl::ACTION_LOGOFF:
-                desktop_session_proxy_->logoffUserSession();
+                desktop_session_proxy_->userSessionControl(
+                    proto::internal::UserSessionControl::LOGOFF);
                 break;
 
             case proto::PowerControl::ACTION_LOCK:
-                desktop_session_proxy_->lockUserSession();
+                desktop_session_proxy_->userSessionControl(
+                    proto::internal::UserSessionControl::LOCK);
                 break;
 
             default:
@@ -225,21 +213,20 @@ void ClientSessionDesktop::readExtension(const proto::DesktopExtension& extensio
     }
     else if (extension.name() == common::kRemoteUpdateExtension)
     {
-        // FIXME: Running in session the current user, not console.
-        launchUpdater(WTSGetActiveConsoleSessionId());
+        launchUpdater(sessionId());
     }
     else if (extension.name() == common::kSystemInfoExtension)
     {
         proto::SystemInfo system_info;
         createHostSystemInfo(&system_info);
 
-        proto::HostToClient message;
+        outgoing_message_.Clear();
 
-        proto::DesktopExtension* extension = message.mutable_extension();
+        proto::DesktopExtension* extension = outgoing_message_.mutable_extension();
         extension->set_name(common::kSystemInfoExtension);
         extension->set_data(system_info.SerializeAsString());
 
-        sendMessage(common::serializeMessage(message));
+        sendMessage(common::serializeMessage(outgoing_message_));
     }
     else
     {
@@ -249,20 +236,18 @@ void ClientSessionDesktop::readExtension(const proto::DesktopExtension& extensio
 
 void ClientSessionDesktop::readConfig(const proto::DesktopConfig& config)
 {
-    std::unique_ptr<codec::VideoEncoder> video_encoder;
-
     switch (config.video_encoding())
     {
         case proto::VIDEO_ENCODING_VP8:
-            video_encoder = codec::VideoEncoderVPX::createVP8();
+            video_encoder_ = codec::VideoEncoderVPX::createVP8();
             break;
 
         case proto::VIDEO_ENCODING_VP9:
-            video_encoder = codec::VideoEncoderVPX::createVP9();
+            video_encoder_ = codec::VideoEncoderVPX::createVP9();
             break;
 
         case proto::VIDEO_ENCODING_ZSTD:
-            video_encoder = codec::VideoEncoderZstd::create(
+            video_encoder_ = codec::VideoEncoderZstd::create(
                 codec::parsePixelFormat(config.pixel_format()), config.compress_ratio());
             break;
 
@@ -274,7 +259,7 @@ void ClientSessionDesktop::readConfig(const proto::DesktopConfig& config)
         break;
     }
 
-    if (!video_encoder)
+    if (!video_encoder_)
     {
         LOG(LS_ERROR) << "Video encoder not initialized!";
         return;
@@ -285,15 +270,11 @@ void ClientSessionDesktop::readConfig(const proto::DesktopConfig& config)
     if (config.flags() & proto::ENABLE_CURSOR_SHAPE)
         cursor_encoder_ = std::make_unique<codec::CursorEncoder>();
 
-    proto::internal::SetFeatures features;
-    features.set_cursor(config.flags() & proto::ENABLE_CURSOR_SHAPE);
-    features.set_effects(!(config.flags() & proto::DISABLE_DESKTOP_EFFECTS));
-    features.set_wallpaper(!(config.flags() & proto::DISABLE_DESKTOP_WALLPAPER));
+    features_.set_disable_effects(config.flags() & proto::DISABLE_DESKTOP_EFFECTS);
+    features_.set_disable_wallpaper(config.flags() & proto::DISABLE_DESKTOP_WALLPAPER);
+    features_.set_block_input(config.flags() & proto::BLOCK_REMOTE_INPUT);
 
-    desktop_session_proxy_->setFeatures(features);
-
-    frame_pump_ = std::make_unique<VideoFramePump>(channelProxy(), std::move(video_encoder));
-    frame_pump_->start();
+    delegate_->onClientSessionConfigured();
 }
 
 } // namespace host

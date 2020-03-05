@@ -16,7 +16,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 //
 
-#include "desktop/mirror_helper.h"
+#include "desktop/win/mirror_helper.h"
 
 #include "base/logging.h"
 #include "base/strings/string_util.h"
@@ -73,7 +73,7 @@ bool MirrorHelper::attachToDesktop(std::wstring_view key_path, bool attach)
     if (status != ERROR_SUCCESS)
     {
         LOG(LS_WARNING) << "Unable to open registry key for device: "
-                        << base::SystemError(status).toString();
+                        << base::SystemError::toString(status);
         return false;
     }
 
@@ -98,7 +98,7 @@ bool MirrorHelper::attachToDesktop(std::wstring_view key_path, bool attach)
     if (status != ERROR_SUCCESS)
     {
         LOG(LS_WARNING) << "Unable to set value for registry key: "
-                        << base::SystemError(status).toString();
+                        << base::SystemError::toString(status);
         return false;
     }
 

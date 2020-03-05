@@ -20,6 +20,7 @@
 #define HOST__HOST_AUTHENTICATOR_H
 
 #include "base/version.h"
+#include "base/waitable_timer.h"
 #include "crypto/big_num.h"
 #include "net/network_listener.h"
 #include "proto/key_exchange.pb.h"
@@ -40,7 +41,7 @@ class UserList;
 class Authenticator : public net::Listener
 {
 public:
-    Authenticator();
+    explicit Authenticator(std::shared_ptr<base::TaskRunner> task_runner);
     ~Authenticator();
 
     enum class State
@@ -82,6 +83,7 @@ private:
     base::ByteArray createKey();
     void onFailed(const base::Location& location);
 
+    base::WaitableTimer timer_;
     std::unique_ptr<net::Channel> channel_;
     std::shared_ptr<UserList> userlist_;
 
@@ -90,13 +92,16 @@ private:
 
     enum class InternalState
     {
-        HELLO,          // Detection state of supported authentication methods.
-        IDENTIFY,       // Username definition.
-        KEY_EXCHANGE,   // Key exchange.
-        SESSION         // Authentication is completed, a session request occurs.
+        READ_CLIENT_HELLO,
+        SEND_SERVER_HELLO,
+        READ_IDENTIFY,
+        SEND_SERVER_KEY_EXCHANGE,
+        READ_CLIENT_KEY_EXCHANGE,
+        SEND_SESSION_CHALLENGE,
+        READ_SESSION_RESPONSE
     };
 
-    InternalState internal_state_ = InternalState::HELLO;
+    InternalState internal_state_ = InternalState::READ_CLIENT_HELLO;
 
     // Bitmask of allowed session types for the user.
     uint32_t session_types_ = 0;

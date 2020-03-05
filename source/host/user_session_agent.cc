@@ -16,35 +16,37 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 //
 
-#include "host/user_session_process.h"
+#include "host/user_session_agent.h"
 
 #include "common/message_serialization.h"
 #include "host/user_session_constants.h"
-#include "host/user_session_process_proxy.h"
+#include "host/user_session_agent_proxy.h"
 #include "host/user_session_window_proxy.h"
 #include "ipc/ipc_channel_proxy.h"
 
 namespace host {
 
-UserSessionProcess::UserSessionProcess(std::shared_ptr<UserSessionWindowProxy> window_proxy)
+UserSessionAgent::UserSessionAgent(std::shared_ptr<UserSessionWindowProxy> window_proxy)
     : window_proxy_(std::move(window_proxy))
 {
     DCHECK(window_proxy_);
+
+    SetProcessShutdownParameters(0x3FF, SHUTDOWN_NORETRY);
 }
 
-UserSessionProcess::~UserSessionProcess()
+UserSessionAgent::~UserSessionAgent()
 {
     io_thread_.stop();
 }
 
-void UserSessionProcess::start()
+void UserSessionAgent::start()
 {
     io_thread_.start(base::MessageLoop::Type::ASIO, this);
 }
 
-void UserSessionProcess::onBeforeThreadRunning()
+void UserSessionAgent::onBeforeThreadRunning()
 {
-    process_proxy_ = std::make_shared<UserSessionProcessProxy>(io_thread_.taskRunner(), this);
+    agent_proxy_ = std::make_shared<UserSessionAgentProxy>(io_thread_.taskRunner(), this);
 
     ipc_channel_ = std::make_unique<ipc::Channel>();
     ipc_channel_->setListener(this);
@@ -56,37 +58,37 @@ void UserSessionProcess::onBeforeThreadRunning()
     }
 }
 
-void UserSessionProcess::onAfterThreadRunning()
+void UserSessionAgent::onAfterThreadRunning()
 {
     ipc_channel_.reset();
-    process_proxy_.reset();
+    agent_proxy_.reset();
 }
 
-void UserSessionProcess::onDisconnected()
+void UserSessionAgent::onDisconnected()
 {
     window_proxy_->onStateChanged(State::DISCONNECTED);
 }
 
-void UserSessionProcess::onMessageReceived(const base::ByteArray& buffer)
+void UserSessionAgent::onMessageReceived(const base::ByteArray& buffer)
 {
-    proto::ServiceToUi message;
+    incoming_message_.Clear();
 
-    if (!common::parseMessage(buffer, &message))
+    if (!common::parseMessage(buffer, &incoming_message_))
     {
         DLOG(LS_ERROR) << "Invalid message from service";
         return;
     }
 
-    if (message.has_connect_event())
+    if (incoming_message_.has_connect_event())
     {
-        clients_.emplace_back(message.connect_event());
+        clients_.emplace_back(incoming_message_.connect_event());
         window_proxy_->onClientListChanged(clients_);
     }
-    else if (message.has_disconnect_event())
+    else if (incoming_message_.has_disconnect_event())
     {
         for (auto it = clients_.begin(); it != clients_.end(); ++it)
         {
-            if (it->uuid == message.disconnect_event().uuid())
+            if (it->uuid == incoming_message_.disconnect_event().uuid())
             {
                 clients_.erase(it);
                 break;
@@ -95,9 +97,9 @@ void UserSessionProcess::onMessageReceived(const base::ByteArray& buffer)
 
         window_proxy_->onClientListChanged(clients_);
     }
-    else if (message.has_credentials())
+    else if (incoming_message_.has_credentials())
     {
-        window_proxy_->onCredentialsChanged(message.credentials());
+        window_proxy_->onCredentialsChanged(incoming_message_.credentials());
     }
     else
     {
@@ -105,18 +107,18 @@ void UserSessionProcess::onMessageReceived(const base::ByteArray& buffer)
     }
 }
 
-void UserSessionProcess::updateCredentials(proto::CredentialsRequest::Type request_type)
+void UserSessionAgent::updateCredentials(proto::internal::CredentialsRequest::Type request_type)
 {
-    proto::UiToService message;
-    message.mutable_credentials_request()->set_type(request_type);
-    ipc_channel_->send(common::serializeMessage(message));
+    outgoing_message_.Clear();
+    outgoing_message_.mutable_credentials_request()->set_type(request_type);
+    ipc_channel_->send(common::serializeMessage(outgoing_message_));
 }
 
-void UserSessionProcess::killClient(const std::string& uuid)
+void UserSessionAgent::killClient(const std::string& uuid)
 {
-    proto::UiToService message;
-    message.mutable_kill_session()->set_uuid(uuid);
-    ipc_channel_->send(common::serializeMessage(message));
+    outgoing_message_.Clear();
+    outgoing_message_.mutable_kill_session()->set_uuid(uuid);
+    ipc_channel_->send(common::serializeMessage(outgoing_message_));
 }
 
 } // namespace host

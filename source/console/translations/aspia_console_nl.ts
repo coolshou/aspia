@@ -358,228 +358,238 @@
         <translation>Recentelijk geopend</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="84"/>
+        <location filename="../console_main_window.ui" line="87"/>
         <source>&amp;Edit</source>
         <translation>B&amp;ewerken</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="98"/>
+        <location filename="../console_main_window.ui" line="101"/>
         <source>&amp;Session Type</source>
         <translation>&amp;Sessie Type</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="106"/>
+        <location filename="../console_main_window.ui" line="109"/>
         <source>&amp;Help</source>
         <translation>&amp;Help</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="117"/>
+        <location filename="../console_main_window.ui" line="120"/>
         <source>&amp;View</source>
         <translation>&amp;Beeld</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="121"/>
+        <location filename="../console_main_window.ui" line="124"/>
         <source>&amp;Language</source>
         <translation>&amp;Taal</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="144"/>
-        <location filename="../console_main_window.ui" line="438"/>
+        <location filename="../console_main_window.ui" line="147"/>
+        <location filename="../console_main_window.ui" line="441"/>
         <source>Tool Bar</source>
         <translation>Werkbalk</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="186"/>
+        <location filename="../console_main_window.ui" line="189"/>
         <source>&amp;New address book</source>
         <translation>&amp;Nieuw adres boek</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="189"/>
+        <location filename="../console_main_window.ui" line="192"/>
         <source>Ctrl+N</source>
         <translation>Ctrl+N</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="198"/>
+        <location filename="../console_main_window.ui" line="201"/>
         <source>&amp;Open address book...</source>
         <translation>&amp;Open adres boek...</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="201"/>
+        <location filename="../console_main_window.ui" line="204"/>
         <source>Ctrl+O</source>
         <translation>Ctrl+O</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="213"/>
+        <location filename="../console_main_window.ui" line="216"/>
         <source>&amp;Save</source>
         <translation>O&amp;pslaan</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="216"/>
+        <location filename="../console_main_window.ui" line="219"/>
         <source>Ctrl+S</source>
         <translation>Ctrl+P</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="224"/>
+        <location filename="../console_main_window.ui" line="227"/>
         <source>Save &amp;as...</source>
         <translation>Opslaan &amp;als...</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="227"/>
+        <location filename="../console_main_window.ui" line="230"/>
         <source>Ctrl+Alt+S</source>
         <translation>Ctrl+Alt+A</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="235"/>
+        <location filename="../console_main_window.ui" line="238"/>
         <source>&amp;Close</source>
         <translation>S&amp;luiten</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="238"/>
+        <location filename="../console_main_window.ui" line="241"/>
         <source>Ctrl+W</source>
         <translation>Ctrl+W</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="247"/>
+        <location filename="../console_main_window.ui" line="250"/>
         <source>&amp;Exit</source>
         <translation>&amp;Beeindigen</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="259"/>
+        <location filename="../console_main_window.ui" line="262"/>
         <source>Add Computer Group</source>
         <translation>Computer Groep Toevoegen</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="271"/>
+        <location filename="../console_main_window.ui" line="274"/>
         <source>Modify Computer Group</source>
         <translation>Computer Groep Aanpassen</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="283"/>
+        <location filename="../console_main_window.ui" line="286"/>
         <source>Delete Computer Group</source>
         <translation>Computer Groep Verwijderen</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="295"/>
+        <location filename="../console_main_window.ui" line="298"/>
         <source>Add Computer</source>
         <translation>Computer Toevoegen</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="307"/>
+        <location filename="../console_main_window.ui" line="310"/>
         <source>Modify Computer</source>
         <translation>Computer Aanpassen</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="319"/>
+        <location filename="../console_main_window.ui" line="322"/>
         <source>Delete Computer</source>
         <translation>Computer Verwijderen</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="334"/>
+        <location filename="../console_main_window.ui" line="337"/>
         <source>Desktop &amp;Manage</source>
         <translation>Bureaublad &amp;Beheren</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="346"/>
+        <location filename="../console_main_window.ui" line="349"/>
         <source>Desktop &amp;View</source>
         <translation>Bureaublad &amp;Weergeven</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="358"/>
+        <location filename="../console_main_window.ui" line="361"/>
         <source>&amp;File Transfer</source>
         <translation>&amp;Bestands Overdracht</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="367"/>
+        <location filename="../console_main_window.ui" line="370"/>
         <source>&amp;Online Help...</source>
         <translation>Online &amp;Hulp...</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="370"/>
+        <location filename="../console_main_window.ui" line="373"/>
         <source>F1</source>
         <translation>F1</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="379"/>
+        <location filename="../console_main_window.ui" line="382"/>
         <source>&amp;About</source>
         <translation>&amp;Over</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="391"/>
+        <location filename="../console_main_window.ui" line="394"/>
         <source>Address Book Properties</source>
         <translation>Adresboek eigenschappen</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="400"/>
         <location filename="../console_main_window.ui" line="403"/>
+        <location filename="../console_main_window.ui" line="406"/>
         <source>Desktop Manage</source>
         <translation>Bureaublad Beheren</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="412"/>
         <location filename="../console_main_window.ui" line="415"/>
+        <location filename="../console_main_window.ui" line="418"/>
         <source>Desktop View</source>
         <translation>Bureaublad Weergeven</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="424"/>
         <location filename="../console_main_window.ui" line="427"/>
+        <location filename="../console_main_window.ui" line="430"/>
         <source>File Transfer</source>
         <translation>Bestands Overdracht</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="449"/>
+        <location filename="../console_main_window.ui" line="452"/>
         <source>Status Bar</source>
         <translation>Status Balk</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="458"/>
+        <location filename="../console_main_window.ui" line="461"/>
         <source>Fast Connect...</source>
         <translation>Snel Verbinden...</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="466"/>
+        <location filename="../console_main_window.ui" line="469"/>
         <source>Show tray icon</source>
         <translation>Toon tray icon</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="474"/>
+        <location filename="../console_main_window.ui" line="477"/>
         <source>Minimize to tray</source>
         <translation>Minimaliseer naar de tray</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="479"/>
+        <location filename="../console_main_window.ui" line="482"/>
         <source>Hide</source>
         <translation>Verbergen</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="491"/>
+        <location filename="../console_main_window.ui" line="494"/>
         <source>Save all</source>
         <translation>Alles opslaan</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="494"/>
+        <location filename="../console_main_window.ui" line="497"/>
         <source>Ctrl+Shift+S</source>
         <translation>Ctrl+Shift+S</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="502"/>
+        <location filename="../console_main_window.ui" line="505"/>
         <source>Close all</source>
         <translation>Alles sluiten</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="505"/>
+        <location filename="../console_main_window.ui" line="508"/>
         <source>Ctrl+Shift+W</source>
         <translation>Ctrl+Shift+W</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="510"/>
+        <location filename="../console_main_window.ui" line="513"/>
         <source>Check for updates...</source>
         <translation>Controleer voor updates...</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="515"/>
+        <location filename="../console_main_window.ui" line="518"/>
         <source>Update Settings</source>
         <translation>Update Instellingen</translation>
+    </message>
+    <message>
+        <location filename="../console_main_window.ui" line="523"/>
+        <source>Clear</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../console_main_window.ui" line="534"/>
+        <source>Remember latest</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1092,7 +1102,7 @@
         <translation>Er is een ongeldig computer adres ingevoerd.</translation>
     </message>
     <message>
-        <location filename="../computer_dialog_general.cc" line="153"/>
+        <location filename="../computer_dialog_general.cc" line="155"/>
         <source>Warning</source>
         <translation>Waarschuwing</translation>
     </message>
@@ -1212,82 +1222,95 @@
 <context>
     <name>console::MainWindow</name>
     <message>
-        <location filename="../console_main_window.cc" line="184"/>
+        <location filename="../console_main_window.cc" line="162"/>
         <source>Warning</source>
         <translation>Waarschuwing</translation>
     </message>
     <message>
-        <location filename="../console_main_window.cc" line="185"/>
+        <location filename="../console_main_window.cc" line="163"/>
         <source>Pinned address book file &quot;%1&quot; was not found.&lt;br/&gt;This file will be unpinned.</source>
         <translation>Het vastgepinde adres boek bestand &quot;%1&quot; is niet gevonden.&lt;br/&gt;Het bestand zal ge-unpind worden.</translation>
     </message>
     <message>
-        <location filename="../console_main_window.cc" line="281"/>
+        <location filename="../console_main_window.cc" line="259"/>
         <source>Open Address Book</source>
         <translation>Open Adresboek</translation>
     </message>
     <message>
-        <location filename="../console_main_window.cc" line="283"/>
+        <location filename="../console_main_window.cc" line="261"/>
         <source>Aspia Address Book (*.aab)</source>
         <translation>Aspia Adresboek (*.aab)</translation>
     </message>
     <message>
-        <location filename="../console_main_window.cc" line="513"/>
-        <location filename="../console_main_window.cc" line="856"/>
+        <location filename="../console_main_window.cc" line="500"/>
+        <location filename="../console_main_window.cc" line="805"/>
+        <location filename="../console_main_window.cc" line="882"/>
         <source>Confirmation</source>
         <translation>Bevestiging</translation>
     </message>
     <message>
-        <location filename="../console_main_window.cc" line="514"/>
-        <location filename="../console_main_window.cc" line="857"/>
+        <location filename="../console_main_window.cc" line="501"/>
+        <location filename="../console_main_window.cc" line="883"/>
         <source>Address book &quot;%1&quot; has been changed. Save changes?</source>
         <translation>Adresboek &quot;%1&quot; is aangepast. Wijzigingen opslaan?</translation>
     </message>
     <message>
-        <location filename="../console_main_window.cc" line="714"/>
+        <location filename="../console_main_window.cc" line="701"/>
         <source>Close other tabs</source>
         <translation>Sluit andere tabs</translation>
     </message>
     <message>
-        <location filename="../console_main_window.cc" line="722"/>
+        <location filename="../console_main_window.cc" line="709"/>
         <source>Close tab</source>
         <translation>Sluit tab</translation>
     </message>
     <message>
-        <location filename="../console_main_window.cc" line="725"/>
-        <location filename="../console_main_window.cc" line="732"/>
+        <location filename="../console_main_window.cc" line="712"/>
+        <location filename="../console_main_window.cc" line="719"/>
         <source>Pin tab</source>
         <translation>Pin tab</translation>
     </message>
     <message>
-        <location filename="../console_main_window.cc" line="813"/>
+        <location filename="../console_main_window.cc" line="806"/>
+        <source>The list of recently opened address books will be cleared. Continue?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../console_main_window.cc" line="839"/>
         <source>Hide</source>
         <translation>Verbergen</translation>
     </message>
     <message>
-        <location filename="../console_main_window.cc" line="828"/>
+        <location filename="../console_main_window.cc" line="854"/>
         <source>Show</source>
         <translation>Weergeven</translation>
     </message>
     <message>
-        <location filename="../console_main_window.cc" line="937"/>
         <source>&lt;empty&gt;</source>
-        <translation>&lt;leeg&gt;</translation>
+        <translation type="vanished">&lt;leeg&gt;</translation>
     </message>
     <message>
-        <location filename="../console_main_window.cc" line="958"/>
+        <location filename="../console_main_window.cc" line="989"/>
         <source>Aspia Console</source>
         <translation>Aspia Console</translation>
     </message>
     <message>
-        <location filename="../console_main_window.cc" line="253"/>
+        <location filename="../console_main_window.cc" line="231"/>
         <source>Information</source>
         <translation>Informatie</translation>
     </message>
     <message>
-        <location filename="../console_main_window.cc" line="254"/>
+        <location filename="../console_main_window.cc" line="232"/>
         <source>Address Book &quot;%1&quot; is already open.</source>
         <translation>Adresboek &quot;%1&quot; is al geopend.</translation>
+    </message>
+</context>
+<context>
+    <name>console::MruAction</name>
+    <message>
+        <location filename="../mru_action.cc" line="29"/>
+        <source>&lt;empty&gt;</source>
+        <translation type="unfinished">&lt;leeg&gt;</translation>
     </message>
 </context>
 <context>

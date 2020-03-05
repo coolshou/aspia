@@ -22,9 +22,8 @@
 #include "base/logging.h"
 #include "base/files/base_paths.h"
 #include "base/strings/string_util.h"
-#include "base/win/process.h"
-#include "base/win/process_util.h"
 #include "base/win/scoped_impersonator.h"
+#include "base/win/scoped_object.h"
 
 #include <userenv.h>
 #include <wtsapi32.h>
@@ -38,23 +37,12 @@ const wchar_t kDefaultDesktopName[] = L"winsta0\\default";
 
 bool createLoggedOnUserToken(DWORD session_id, base::win::ScopedHandle* token_out)
 {
-    base::win::ScopedHandle privileged_token;
-
-    if (!createPrivilegedToken(&privileged_token))
-        return false;
-
-    base::win::ScopedImpersonator impersonator;
-    if (!impersonator.loggedOnUser(privileged_token))
-        return false;
-
     base::win::ScopedHandle user_token;
     if (!WTSQueryUserToken(session_id, user_token.recieve()))
     {
         PLOG(LS_WARNING) << "WTSQueryUserToken failed";
         return false;
     }
-
-    impersonator.revertToSelf();
 
     TOKEN_ELEVATION_TYPE elevation_type;
     DWORD returned_length;
@@ -147,9 +135,9 @@ bool createProcessWithToken(HANDLE token, const base::CommandLine& command_line)
 
 } // namespace
 
-bool launchUpdater(base::win::SessionId session_id)
+bool launchUpdater(base::SessionId session_id)
 {
-    if (session_id == base::win::kInvalidSessionId || session_id == base::win::kServiceSessionId)
+    if (session_id == base::kInvalidSessionId || session_id == base::kServiceSessionId)
     {
         DLOG(LS_ERROR) << "Invalid session id: " << session_id;
         return false;

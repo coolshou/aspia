@@ -75,8 +75,8 @@ BOOL CALLBACK terminateEnumProc(HWND hwnd, LPARAM lparam)
 
 } // namespace
 
-Process::Process(std::shared_ptr<TaskRunner>& task_runner, ProcessId process_id)
-    : watcher_(task_runner)
+Process::Process(std::shared_ptr<TaskRunner> task_runner, ProcessId process_id)
+    : watcher_(std::move(task_runner))
 {
     // We need SE_DEBUG_NAME privilege to open the process.
     ScopedHandle privileged_token;
@@ -97,8 +97,8 @@ Process::Process(std::shared_ptr<TaskRunner>& task_runner, ProcessId process_id)
     process_.swap(process);
 }
 
-Process::Process(std::shared_ptr<TaskRunner>& task_runner, HANDLE process, HANDLE thread)
-    : watcher_(task_runner),
+Process::Process(std::shared_ptr<TaskRunner> task_runner, HANDLE process, HANDLE thread)
+    : watcher_(std::move(task_runner)),
       process_(process),
       thread_(thread)
 {
@@ -132,7 +132,7 @@ std::filesystem::path Process::filePath() const
 {
     wchar_t buffer[MAX_PATH] = { 0 };
 
-    if (!GetModuleFileNameExW(process_.get(), nullptr, buffer, _countof(buffer)))
+    if (!GetModuleFileNameExW(process_.get(), nullptr, buffer, std::size(buffer)))
     {
         PLOG(LS_WARNING) << "GetModuleFileNameExW failed";
         return std::filesystem::path();
@@ -145,7 +145,7 @@ std::u16string Process::fileName() const
 {
     wchar_t buffer[MAX_PATH] = { 0 };
 
-    if (GetProcessImageFileNameW(process_.get(), buffer, _countof(buffer)))
+    if (GetProcessImageFileNameW(process_.get(), buffer, std::size(buffer)))
     {
         PLOG(LS_WARNING) << "GetProcessImageFileNameW failed";
         return std::u16string();

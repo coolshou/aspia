@@ -16,37 +16,34 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 //
 
-#ifndef DESKTOP__DESKTOP_FRAME_QIMAGE_H
-#define DESKTOP__DESKTOP_FRAME_QIMAGE_H
+#ifndef DESKTOP__WIN__MIRROR_HELPER_H
+#define DESKTOP__WIN__MIRROR_HELPER_H
 
-#include "desktop/desktop_frame.h"
+#include "desktop/desktop_geometry.h"
 
-#include <QImage>
-
-#include <memory>
+#include <string>
 
 namespace desktop {
 
-class FrameQImage : public Frame
+class Frame;
+class Region;
+
+class MirrorHelper
 {
 public:
-    ~FrameQImage() = default;
+    virtual ~MirrorHelper() = default;
 
-    static std::unique_ptr<FrameQImage> create(const Size& size);
-    static std::unique_ptr<FrameQImage> create(const QPixmap& pixmap);
-    static std::unique_ptr<FrameQImage> create(QImage&& image);
+    virtual const Rect& screenRect() const = 0;
+    virtual void addUpdatedRects(Region* updated_region) const = 0;
+    virtual void copyRegion(Frame* frame, const Region& updated_region) const = 0;
 
-    const QImage& constImage() const { return image_; }
-    QImage* image() { return &image_; }
-
-private:
-    FrameQImage(QImage&& img);
-
-    QImage image_;
-
-    DISALLOW_COPY_AND_ASSIGN(FrameQImage);
+protected:
+    static bool findDisplayDevice(std::wstring_view device_string,
+                                  std::wstring* device_name,
+                                  std::wstring* device_key);
+    static bool attachToDesktop(std::wstring_view key_path, bool attach);
 };
 
 } // namespace desktop
 
-#endif // DESKTOP__DESKTOP_FRAME_QIMAGE_H
+#endif // DESKTOP__WIN__MIRROR_HELPER_H

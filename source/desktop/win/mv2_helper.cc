@@ -16,7 +16,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 //
 
-#include "desktop/mv2_helper.h"
+#include "desktop/win/mv2_helper.h"
 
 #include "desktop/desktop_frame.h"
 
@@ -141,7 +141,7 @@ bool Mv2Helper::update(bool load)
         device_mode.dmBitsPerPel = kBitsPerPixel;
     }
 
-    wcsncpy_s(device_mode.dmDeviceName, _countof(device_mode.dmDeviceName),
+    wcsncpy_s(device_mode.dmDeviceName, std::size(device_mode.dmDeviceName),
               device_name_.c_str(), device_name_.length());
 
     LONG status = ChangeDisplaySettingsExW(

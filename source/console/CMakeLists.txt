@@ -71,6 +71,8 @@ list(APPEND SOURCE_CONSOLE
     console_tab.h
     mru.cc
     mru.h
+    mru_action.cc
+    mru_action.h
     open_address_book_dialog.cc
     open_address_book_dialog.h
     open_address_book_dialog.ui
@@ -101,6 +103,8 @@ target_link_libraries(aspia_console
     aspia_proto
     aspia_qt_base
     aspia_updater
+    ${QT_LIBS}
+    ${WINDOWS_LIBS}
     ${THIRD_PARTY_LIBS})
 
 if (USE_TBB)
@@ -123,4 +127,9 @@ if(Qt5LinguistTools_FOUND)
     add_custom_target(aspia_console_ts_update DEPENDS ${TS_CONSOLE_UPDATE})
 else()
     message(WARNING "Qt5 linguist tools not found. Internationalization support will be disabled.")
+endif()
+
+if(NOT TARGET BUILD_CONSOLE)
+    add_custom_target(BUILD_CONSOLE)
+    add_dependencies(BUILD_CONSOLE aspia_console)
 endif()

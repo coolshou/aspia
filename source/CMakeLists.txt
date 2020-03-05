@@ -16,7 +16,9 @@
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 #
 
-cmake_minimum_required(VERSION 3.15.0)
+cmake_minimum_required(VERSION 3.16.0)
+
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 option(BUILD_UNIT_TESTS "Build unit tests" ON)
 option(USE_TBB "Using Intel TBB" ON)
@@ -93,7 +95,7 @@ link_directories(
     ${ASPIA_THIRD_PARTY_DIR}/tbb/lib
     ${ASPIA_THIRD_PARTY_DIR}/zstd/lib)
 
-set(THIRD_PARTY_LIBS
+set(QT_LIBS
     Qt5::Core
     Qt5::Gui
     Qt5::Network
@@ -102,48 +104,35 @@ set(THIRD_PARTY_LIBS
     Qt5::WinMain
     Qt5::WinExtras
     Qt5::Xml
+    Qt5::QWindowsIntegrationPlugin
+    Qt5::QWindowsVistaStylePlugin
+    Qt5::QWindowsPrinterSupportPlugin
     debug Qt5AccessibilitySupportd
     debug Qt5EventDispatcherSupportd
     debug Qt5FontDatabaseSupportd
     debug Qt5ThemeSupportd
     debug Qt5WindowsUIAutomationSupportd
-    debug libprotobuf-lited
-    debug vpxmtd
-    debug yuv_debug
     debug qtfreetyped
     debug qtharfbuzzd
     debug qtlibpngd
     debug qtpcre2d
-    debug qwindowsd
-    debug qwindowsvistastyled
-    debug tbb_debug
-    debug windowsprintersupportd
-    debug libzstd_static_debug
     optimized Qt5AccessibilitySupport
     optimized Qt5EventDispatcherSupport
     optimized Qt5FontDatabaseSupport
     optimized Qt5ThemeSupport
     optimized Qt5WindowsUIAutomationSupport
-    optimized libprotobuf-lite
-    optimized vpxmt
-    optimized yuv
     optimized qtfreetype
     optimized qtharfbuzz
     optimized qtlibpng
-    optimized qtpcre2
-    optimized qwindows
-    optimized qwindowsvistastyle
-    optimized tbb
-    optimized windowsprintersupport
-    optimized libzstd_static
+    optimized qtpcre2)
+
+set(WINDOWS_LIBS
     crypt32
     dwmapi
     dxgi
     d3d11
     imm32
     iphlpapi
-    libcrypto
-    libssl
     mpr
     netapi32
     sas
@@ -156,13 +145,38 @@ set(THIRD_PARTY_LIBS
     ws2_32
     wtsapi32)
 
+set(THIRD_PARTY_LIBS
+    debug libprotobuf-lited
+    debug vpxmtd
+    debug yuv_debug
+    debug tbb_debug
+    debug zstd_static_debug
+    optimized libprotobuf-lite
+    optimized vpxmt
+    optimized yuv
+    optimized tbb
+    optimized zstd_static
+    libcrypto
+    libssl
+    modp_b64
+    x11region)
+
+# C++ compliller flags.
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /GL /MP /arch:SSE2")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MP")
+
+# C compiller flags.
+set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} /GL /MP /arch:SSE2")
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} /MP")
+
+# Linker flags.
 set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /LTCG /INCREMENTAL:NO /OPT:REF")
 set(CMAKE_STATIC_LINKER_FLAGS_RELEASE "${CMAKE_STATIC_LINKER_FLAGS_RELEASE} /LTCG")
 set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /LTCG /INCREMENTAL:NO /OPT:REF")
+
+# Static runtime library.
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
@@ -187,4 +201,5 @@ add_subdirectory(proto)
 add_subdirectory(proxy)
 add_subdirectory(qt_base)
 add_subdirectory(router)
+add_subdirectory(third_party)
 add_subdirectory(updater)

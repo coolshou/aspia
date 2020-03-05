@@ -19,7 +19,7 @@
 #ifndef HOST__USER_SESSION_WINDOW_PROXY_H
 #define HOST__USER_SESSION_WINDOW_PROXY_H
 
-#include "host/user_session_process.h"
+#include "host/user_session_agent.h"
 
 namespace host {
 
@@ -34,9 +34,9 @@ public:
 
     void dettach();
 
-    void onStateChanged(UserSessionProcess::State state);
-    void onClientListChanged(const UserSessionProcess::ClientList& clients);
-    void onCredentialsChanged(const proto::Credentials& credentials);
+    void onStateChanged(UserSessionAgent::State state);
+    void onClientListChanged(const UserSessionAgent::ClientList& clients);
+    void onCredentialsChanged(const proto::internal::Credentials& credentials);
 
 private:
     std::shared_ptr<base::TaskRunner> ui_task_runner_;

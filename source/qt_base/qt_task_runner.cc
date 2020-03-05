@@ -33,9 +33,9 @@ class TaskEvent : public QEvent
 public:
     static const int kType = QEvent::User + 1;
 
-    explicit TaskEvent(const base::TaskRunner::Callback& callback)
+    explicit TaskEvent(base::TaskRunner::Callback&& callback)
         : QEvent(QEvent::Type(kType)),
-          callback(callback)
+          callback(std::move(callback))
     {
         // Nothing
     }
@@ -55,7 +55,7 @@ public:
     ~Impl();
 
     bool belongsToCurrentThread() const;
-    bool postTask(const Callback& callback);
+    void postTask(Callback&& callback, int priority);
 
 protected:
     // QObject implementation.
@@ -80,10 +80,9 @@ bool QtTaskRunner::Impl::belongsToCurrentThread() const
     return QThread::currentThreadId() == current_thread_;
 }
 
-bool QtTaskRunner::Impl::postTask(const Callback& callback)
+void QtTaskRunner::Impl::postTask(Callback&& callback, int priority)
 {
-    QApplication::postEvent(this, new TaskEvent(callback));
-    return true;
+    QApplication::postEvent(this, new TaskEvent(std::move(callback)), priority);
 }
 
 void QtTaskRunner::Impl::customEvent(QEvent* event)
@@ -105,21 +104,29 @@ bool QtTaskRunner::belongsToCurrentThread() const
     return impl_->belongsToCurrentThread();
 }
 
-bool QtTaskRunner::postTask(const Callback& callback)
+void QtTaskRunner::postTask(Callback callback)
 {
-    return impl_->postTask(callback);
+    impl_->postTask(std::move(callback), Qt::NormalEventPriority);
 }
 
-bool QtTaskRunner::postDelayedTask(const Callback& /* callback */, const Milliseconds& /* delay */)
+void QtTaskRunner::postDelayedTask(Callback /* callback */, Milliseconds /* delay */)
 {
     NOTIMPLEMENTED();
-    return false;
 }
 
-bool QtTaskRunner::postQuit()
+void QtTaskRunner::postNonNestableTask(Callback callback)
+{
+    impl_->postTask(std::move(callback), Qt::LowEventPriority);
+}
+
+void QtTaskRunner::postNonNestableDelayedTask(Callback /* callback */, Milliseconds /* delay */)
 {
     NOTIMPLEMENTED();
-    return false;
+}
+
+void QtTaskRunner::postQuit()
+{
+    NOTIMPLEMENTED();
 }
 
 } // namespace qt_base

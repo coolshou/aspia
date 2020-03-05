@@ -25,8 +25,8 @@
 
 namespace client {
 
-Client::Client(std::shared_ptr<base::TaskRunner>& ui_task_runner)
-    : ui_task_runner_(ui_task_runner)
+Client::Client(std::shared_ptr<base::TaskRunner> ui_task_runner)
+    : ui_task_runner_(std::move(ui_task_runner))
 {
     DCHECK(ui_task_runner_);
     DCHECK(ui_task_runner_->belongsToCurrentThread());
@@ -121,7 +121,7 @@ void Client::onBeforeThreadRunning()
 
 void Client::onAfterThreadRunning()
 {
-    // Network connection is no longer available.
+    authenticator_.reset();
     channel_.reset();
 
     if (session_started_)
@@ -144,29 +144,31 @@ void Client::onConnected()
 
     authenticator_->start(std::move(channel_), [this](Authenticator::ErrorCode error_code)
     {
-        // Authenticator is no longer needed.
-        std::unique_ptr<Authenticator> authenticator(std::move(authenticator_));
+        if (error_code == Authenticator::ErrorCode::SUCCESS)
+        {
+            // The authenticator takes the listener on itself, we return the receipt of
+            // notifications.
+            channel_ = authenticator_->takeChannel();
+            channel_->setListener(this);
 
-        if (error_code != Authenticator::ErrorCode::SUCCESS)
+            status_window_proxy_->onConnected();
+
+            session_started_ = true;
+
+            // Signal that everything is ready to start the session (connection established,
+            // authentication passed).
+            onSessionStarted(authenticator_->peerVersion());
+
+            // Now the session will receive incoming messages.
+            channel_->resume();
+        }
+        else
         {
             status_window_proxy_->onAccessDenied(error_code);
-            return;
         }
 
-        // The authenticator takes the listener on itself, we return the receipt of notifications.
-        channel_ = authenticator->takeChannel();
-        channel_->setListener(this);
-
-        status_window_proxy_->onConnected();
-
-        session_started_ = true;
-
-        // Signal that everything is ready to start the session (connection established,
-        // authentication passed).
-        onSessionStarted(authenticator->peerVersion());
-
-        // Now the session will receive incoming messages.
-        channel_->resume();
+        // Authenticator is no longer needed.
+        io_task_runner_->deleteSoon(authenticator_.release());
     });
 }
 

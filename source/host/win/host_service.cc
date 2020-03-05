@@ -21,6 +21,7 @@
 #include "base/logging.h"
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/security_helpers.h"
+#include "base/win/session_status.h"
 #include "host/win/host_service_constants.h"
 #include "host/host_server.h"
 
@@ -69,6 +70,8 @@ void Service::onStart()
 {
     LOG(LS_INFO) << "Service is started";
 
+    SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
+
     com_initializer_ = std::make_unique<base::win::ScopedCOMInitializer>();
     if (!com_initializer_->isSucceeded())
     {
@@ -92,10 +95,10 @@ void Service::onStop()
     LOG(LS_INFO) << "Service is stopped";
 }
 
-void Service::onSessionEvent(base::win::SessionStatus status, base::win::SessionId session_id)
+void Service::onSessionEvent(base::win::SessionStatus status, base::SessionId session_id)
 {
-    LOG(LS_INFO) << "Session event detected (status = " << static_cast<int>(status)
-                 << ", session_id = " << session_id << ")";
+    LOG(LS_INFO) << "Session event detected (status: " << base::win::sessionStatusToString(status)
+                 << ", session_id: " << session_id << ")";
 
     if (server_)
         server_->setSessionEvent(status, session_id);

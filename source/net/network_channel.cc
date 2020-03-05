@@ -248,7 +248,9 @@ void Channel::onErrorOccurred(const base::Location& location, const std::error_c
 
     ErrorCode error = ErrorCode::UNKNOWN;
 
-    if (error_code == asio::error::host_not_found)
+    if (error_code == asio::error::access_denied)
+        error = ErrorCode::ACCESS_DENIED;
+    else if (error_code == asio::error::host_not_found)
         error = ErrorCode::SPECIFIED_HOST_NOT_FOUND;
     else if (error_code == asio::error::connection_refused)
         error = ErrorCode::CONNECTION_REFUSED;
@@ -378,13 +380,13 @@ void Channel::doWrite()
 
 void Channel::onWrite(const std::error_code& error_code, size_t bytes_transferred)
 {
-    DCHECK(!write_queue_.empty());
-
     if (error_code)
     {
         onErrorOccurred(FROM_HERE, error_code);
         return;
     }
+
+    DCHECK(!write_queue_.empty());
 
     onMessageWritten();
 

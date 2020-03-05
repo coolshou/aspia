@@ -16,17 +16,30 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 //
 
-#ifndef BASE__WIN__SESSION_ID_H
-#define BASE__WIN__SESSION_ID_H
+#ifndef CLIENT__UI__CLIENT_SETTINGS_H
+#define CLIENT__UI__CLIENT_SETTINGS_H
 
-namespace base::win {
+#include "base/macros_magic.h"
 
-using SessionId = unsigned long;
-const SessionId kInvalidSessionId = 0xFFFFFFFF;
-const SessionId kServiceSessionId = 0;
+#include <QSettings>
 
-SessionId activeConsoleSessionId();
+namespace client {
 
-} // namespace base::win
+class ClientSettings
+{
+public:
+    ClientSettings();
+    ~ClientSettings() = default;
 
-#endif // BASE__WIN__SESSION_ID_H
+    QStringList addressList() const;
+    void setAddressList(const QStringList& list);
+
+private:
+    QSettings settings_;
+
+    DISALLOW_COPY_AND_ASSIGN(ClientSettings);
+};
+
+} // namespace client
+
+#endif // CLIENT__UI__CLIENT_SETTINGS_H

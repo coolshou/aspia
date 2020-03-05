@@ -36,28 +36,32 @@ public:
     using Milliseconds = std::chrono::milliseconds;
 
     virtual bool belongsToCurrentThread() const = 0;
-    virtual bool postTask(const Callback& task) = 0;
-    virtual bool postDelayedTask(const Callback& callback, const Milliseconds& delay) = 0;
-    virtual bool postQuit() = 0;
+    virtual void postTask(Callback task) = 0;
+    virtual void postDelayedTask(Callback callback, Milliseconds delay) = 0;
+    virtual void postNonNestableTask(Callback callback) = 0;
+    virtual void postNonNestableDelayedTask(Callback callback, Milliseconds delay) = 0;
+    virtual void postQuit() = 0;
 
     template <class T>
-    class DeleteHelper
+    static void doDelete(const void* object)
     {
-    public:
-        static void doDelete(const void* object)
-        {
-            delete reinterpret_cast<const T*>(object);
-        }
-
-    private:
-        DISALLOW_COPY_AND_ASSIGN(DeleteHelper);
-    };
+        delete static_cast<const T*>(object);
+    }
 
     template <class T>
     void deleteSoon(const T* object)
     {
-        postTask(std::bind(&DeleteHelper<T>::doDelete, object));
+        deleteSoonInternal(&TaskRunner::doDelete<T>, object);
     }
+
+    template <class T>
+    void deleteSoon(std::unique_ptr<T> object)
+    {
+        deleteSoon(object.release());
+    }
+
+private:
+    void deleteSoonInternal(void(*deleter)(const void*), const void* object);
 };
 
 } // namespace base

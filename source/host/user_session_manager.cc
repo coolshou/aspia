@@ -20,12 +20,14 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/task_runner.h"
 #include "base/files/base_paths.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/win/scoped_impersonator.h"
 #include "base/win/scoped_object.h"
 #include "base/win/session_enumerator.h"
+#include "base/win/session_info.h"
 #include "host/client_session.h"
 #include "host/user_session.h"
 #include "host/user_session_constants.h"
@@ -42,83 +44,21 @@ const wchar_t kExecutableNameForUi[] = L"aspia_host.exe";
 // Name of the default session desktop.
 const wchar_t kDefaultDesktopName[] = L"winsta0\\default";
 
-bool copyProcessToken(DWORD desired_access, base::win::ScopedHandle* token_out)
-{
-    base::win::ScopedHandle process_token;
-
-    if (!OpenProcessToken(GetCurrentProcess(),
-                          TOKEN_DUPLICATE | desired_access,
-                          process_token.recieve()))
-    {
-        PLOG(LS_WARNING) << "OpenProcessToken failed";
-        return false;
-    }
-
-    if (!DuplicateTokenEx(process_token,
-                          desired_access,
-                          nullptr,
-                          SecurityImpersonation,
-                          TokenPrimary,
-                          token_out->recieve()))
-    {
-        PLOG(LS_WARNING) << "DuplicateTokenEx failed";
-        return false;
-    }
-
-    return true;
-}
-
-bool createPrivilegedToken(base::win::ScopedHandle* token_out)
-{
-    base::win::ScopedHandle privileged_token;
-    const DWORD desired_access = TOKEN_ADJUST_PRIVILEGES | TOKEN_IMPERSONATE |
-        TOKEN_DUPLICATE | TOKEN_QUERY;
-
-    if (!copyProcessToken(desired_access, &privileged_token))
-        return false;
-
-    // Get the LUID for the SE_TCB_NAME privilege.
-    TOKEN_PRIVILEGES state;
-    state.PrivilegeCount = 1;
-    state.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
-
-    if (!LookupPrivilegeValueW(nullptr, SE_TCB_NAME, &state.Privileges[0].Luid))
-    {
-        PLOG(LS_WARNING) << "LookupPrivilegeValueW failed";
-        return false;
-    }
-
-    // Enable the SE_TCB_NAME privilege.
-    if (!AdjustTokenPrivileges(privileged_token, FALSE, &state, 0, nullptr, nullptr))
-    {
-        PLOG(LS_WARNING) << "AdjustTokenPrivileges failed";
-        return false;
-    }
-
-    token_out->reset(privileged_token.release());
-    return true;
-}
-
 bool createLoggedOnUserToken(DWORD session_id, base::win::ScopedHandle* token_out)
 {
-    base::win::ScopedHandle privileged_token;
-
-    if (!createPrivilegedToken(&privileged_token))
-        return false;
-
     base::win::ScopedHandle user_token;
 
+    if (!WTSQueryUserToken(session_id, user_token.recieve()))
     {
-        base::win::ScopedImpersonator impersonator;
+            DWORD error_code = GetLastError();
+            if (error_code == ERROR_NO_TOKEN)
+            {
+                token_out->reset();
+                return true;
+            }
 
-        if (!impersonator.loggedOnUser(privileged_token))
-            return false;
-
-        if (!WTSQueryUserToken(session_id, user_token.recieve()))
-        {
             PLOG(LS_WARNING) << "WTSQueryUserToken failed";
             return false;
-        }
     }
 
     TOKEN_ELEVATION_TYPE elevation_type;
@@ -211,6 +151,11 @@ bool createProcessWithToken(HANDLE token, const base::CommandLine& command_line)
         return false;
     }
 
+    if (!SetPriorityClass(process_info.hProcess, NORMAL_PRIORITY_CLASS))
+    {
+        PLOG(LS_WARNING) << "SetPriorityClass failed";
+    }
+
     CloseHandle(process_info.hThread);
     CloseHandle(process_info.hProcess);
     DestroyEnvironmentBlock(environment);
@@ -254,10 +199,15 @@ bool UserSessionManager::start(Delegate* delegate)
 }
 
 void UserSessionManager::setSessionEvent(
-    base::win::SessionStatus status, base::win::SessionId session_id)
+    base::win::SessionStatus status, base::SessionId session_id)
 {
+    // Send an event of each session.
+    for (const auto& session : sessions_)
+        session->setSessionEvent(status, session_id);
+
     switch (status)
     {
+        case base::win::SessionStatus::CONSOLE_CONNECT:
         case base::win::SessionStatus::SESSION_LOGON:
         {
             // Start UI process in user session.
@@ -275,7 +225,9 @@ void UserSessionManager::setSessionEvent(
 
 void UserSessionManager::addNewSession(std::unique_ptr<ClientSession> client_session)
 {
-    base::win::SessionId session_id;
+    LOG(LS_INFO) << "Adding a new client connection (user: " << client_session->userName() << ")";
+
+    base::SessionId session_id;
 
     std::u16string username = client_session->userName();
     if (base::startsWith(username, u"#"))
@@ -287,13 +239,37 @@ void UserSessionManager::addNewSession(std::unique_ptr<ClientSession> client_ses
     }
     else
     {
-        session_id = base::win::activeConsoleSessionId();
+        session_id = base::activeConsoleSessionId();
     }
 
     for (const auto& session : sessions_)
     {
         if (session->sessionId() == session_id)
         {
+            if (session->state() == UserSession::State::DETTACHED)
+            {
+                base::win::SessionInfo session_info(session_id);
+                if (!session_info.isValid())
+                {
+                    LOG(LS_ERROR) << "Unable to determine session state. Connection aborted";
+                    return;
+                }
+
+                switch (session_info.connectState())
+                {
+                    case base::win::SessionInfo::ConnectState::CONNECTED:
+                    {
+                        LOG(LS_INFO) << "Session exists, but there are no logged in users";
+                        session->restart(nullptr);
+                    }
+                    break;
+
+                    default:
+                        LOG(LS_INFO) << "No connected UI. Connection rejected";
+                        return;
+                }
+            }
+
             session->addNewSession(std::move(client_session));
             break;
         }
@@ -312,34 +288,68 @@ UserList UserSessionManager::userList() const
 
 void UserSessionManager::onNewConnection(std::unique_ptr<ipc::Channel> channel)
 {
-    sessions_.emplace_back(std::make_unique<UserSession>(task_runner_, std::move(channel)));
-    sessions_.back()->start(this);
+    std::filesystem::path reference_path;
+    if (!base::BasePaths::currentExecDir(&reference_path))
+        return;
+
+    reference_path.append(kExecutableNameForUi);
+
+    if (reference_path != channel->peerFilePath())
+    {
+        LOG(LS_ERROR) << "An attempt was made to connect from an unknown application";
+        return;
+    }
+
+    addUserSession(channel->peerSessionId(), std::move(channel));
 }
 
 void UserSessionManager::onErrorOccurred()
 {
-    // TODO
-    LOG(LS_INFO) << "ON ERROR OCCURRED";
+    // Ignore.
 }
 
 void UserSessionManager::onUserSessionStarted()
 {
-    LOG(LS_INFO) << "ON USER SESSION STARTED";
+    delegate_->onUserListChanged();
+}
+
+void UserSessionManager::onUserSessionDettached()
+{
+    delegate_->onUserListChanged();
 }
 
 void UserSessionManager::onUserSessionFinished()
 {
-    LOG(LS_INFO) << "ON USER SESSION FINISHED";
+    for (auto it = sessions_.begin(); it != sessions_.end();)
+    {
+        if (it->get()->state() == UserSession::State::FINISHED)
+        {
+            task_runner_->deleteSoon(std::move(*it));
+            it = sessions_.erase(it);
+        }
+        else
+        {
+            ++it;
+        }
+    }
 }
 
-void UserSessionManager::startSessionProcess(base::win::SessionId session_id)
+void UserSessionManager::startSessionProcess(base::SessionId session_id)
 {
-    if (session_id == base::win::kServiceSessionId)
+    if (session_id == base::kServiceSessionId)
         return;
 
     base::win::ScopedHandle user_token;
     if (!createLoggedOnUserToken(session_id, &user_token))
         return;
+
+    if (!user_token.isValid())
+    {
+        // If there is no user logged in, but the session exists, then add the session without
+        // connecting to UI (we cannot start UI if the user is not logged in).
+        addUserSession(session_id, nullptr);
+        return;
+    }
 
     std::filesystem::path file_path;
     if (!base::BasePaths::currentExecDir(&file_path))
@@ -351,6 +361,23 @@ void UserSessionManager::startSessionProcess(base::win::SessionId session_id)
     command_line.appendSwitch(u"hidden");
 
     createProcessWithToken(user_token, command_line);
+}
+
+void UserSessionManager::addUserSession(
+    base::SessionId session_id, std::unique_ptr<ipc::Channel> channel)
+{
+    for (const auto& session : sessions_)
+    {
+        if (session->sessionId() == session_id)
+        {
+            session->restart(std::move(channel));
+            return;
+        }
+    }
+
+    sessions_.emplace_back(std::make_unique<UserSession>(
+        task_runner_, session_id, std::move(channel)));
+    sessions_.back()->start(this);
 }
 
 } // namespace host

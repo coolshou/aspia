@@ -39,7 +39,18 @@
 
 namespace host {
 
-Authenticator::Authenticator() = default;
+namespace {
+
+constexpr std::chrono::minutes kTimeout{ 1 };
+
+} // namespace
+
+Authenticator::Authenticator(std::shared_ptr<base::TaskRunner> task_runner)
+    : timer_(task_runner)
+{
+    // Nothing
+}
+
 Authenticator::~Authenticator() = default;
 
 void Authenticator::start(std::unique_ptr<net::Channel> channel,
@@ -50,12 +61,17 @@ void Authenticator::start(std::unique_ptr<net::Channel> channel,
     userlist_ = std::move(userlist);
     delegate_ = delegate;
 
-    DCHECK_EQ(internal_state_, InternalState::HELLO);
+    DCHECK_EQ(internal_state_, InternalState::READ_CLIENT_HELLO);
     DCHECK(channel_);
     DCHECK(userlist_);
     DCHECK(delegate_);
 
     state_ = State::PENDING;
+
+    timer_.start(kTimeout, [this]()
+    {
+        onFailed(FROM_HERE);
+    });
 
     channel_->setListener(this);
     channel_->resume();
@@ -88,16 +104,15 @@ void Authenticator::onConnected()
 
 void Authenticator::onDisconnected(net::ErrorCode error_code)
 {
-    LOG(LS_WARNING) << "Network error: " << static_cast<int>(error_code);
+    LOG(LS_WARNING) << "Network error: " << net::errorToString(error_code);
     onFailed(FROM_HERE);
 }
-
 
 void Authenticator::onMessageReceived(const base::ByteArray& buffer)
 {
     switch (internal_state_)
     {
-        case InternalState::HELLO:
+        case InternalState::READ_CLIENT_HELLO:
         {
             proto::ClientHello client_hello;
 
@@ -131,14 +146,14 @@ void Authenticator::onMessageReceived(const base::ByteArray& buffer)
             }
 
             // Now we are in the authentication phase.
-            internal_state_ = InternalState::IDENTIFY;
+            internal_state_ = InternalState::SEND_SERVER_HELLO;
             method_ = server_hello.method();
 
             channel_->send(common::serializeMessage(server_hello));
         }
         break;
 
-        case InternalState::IDENTIFY:
+        case InternalState::READ_IDENTIFY:
         {
             proto::SrpIdentify identify;
 
@@ -155,8 +170,8 @@ void Authenticator::onMessageReceived(const base::ByteArray& buffer)
                 return;
             }
 
-            const size_t user_index = userlist_->find(username_);
-            if (user_index == -1)
+            const User& user = userlist_->find(username_);
+            if (!user.isValid())
             {
                 session_types_ = proto::SESSION_TYPE_ALL;
 
@@ -171,8 +186,6 @@ void Authenticator::onMessageReceived(const base::ByteArray& buffer)
             }
             else
             {
-                const User& user = userlist_->at(user_index);
-
                 session_types_ = user.sessions;
 
                 N_ = crypto::BigNum::fromByteArray(user.number);
@@ -190,7 +203,7 @@ void Authenticator::onMessageReceived(const base::ByteArray& buffer)
                 return;
             }
 
-            internal_state_ = InternalState::KEY_EXCHANGE;
+            internal_state_ = InternalState::SEND_SERVER_KEY_EXCHANGE;
             encrypt_iv_ = crypto::Random::byteArray(12);
 
             proto::SrpServerKeyExchange server_key_exchange;
@@ -205,7 +218,7 @@ void Authenticator::onMessageReceived(const base::ByteArray& buffer)
         }
         break;
 
-        case InternalState::KEY_EXCHANGE:
+        case InternalState::READ_CLIENT_KEY_EXCHANGE:
         {
             proto::SrpClientKeyExchange client_key_exchange;
 
@@ -252,7 +265,7 @@ void Authenticator::onMessageReceived(const base::ByteArray& buffer)
                 return;
             }
 
-            internal_state_ = InternalState::SESSION;
+            internal_state_ = InternalState::SEND_SESSION_CHALLENGE;
 
             channel_->setEncryptor(std::move(encryptor));
             channel_->setDecryptor(std::move(decryptor));
@@ -269,7 +282,7 @@ void Authenticator::onMessageReceived(const base::ByteArray& buffer)
         }
         break;
 
-        case InternalState::SESSION:
+        case InternalState::READ_SESSION_RESPONSE:
         {
             // Stop receiving incoming messages.
             channel_->setListener(nullptr);
@@ -291,6 +304,8 @@ void Authenticator::onMessageReceived(const base::ByteArray& buffer)
             LOG(LS_INFO) << "Authentication completed successfully for "
                          << channel_->peerAddress();
 
+            timer_.stop();
+
             // Authentication completed successfully.
             state_ = State::SUCCESS;
 
@@ -307,7 +322,24 @@ void Authenticator::onMessageReceived(const base::ByteArray& buffer)
 
 void Authenticator::onMessageWritten()
 {
-    // Nothing
+    switch (internal_state_)
+    {
+        case InternalState::SEND_SERVER_HELLO:
+            internal_state_ = InternalState::READ_IDENTIFY;
+            break;
+
+        case InternalState::SEND_SERVER_KEY_EXCHANGE:
+            internal_state_ = InternalState::READ_CLIENT_KEY_EXCHANGE;
+            break;
+
+        case InternalState::SEND_SESSION_CHALLENGE:
+            internal_state_ = InternalState::READ_SESSION_RESPONSE;
+            break;
+
+        default:
+            NOTREACHED();
+            break;
+    }
 }
 
 base::ByteArray Authenticator::createKey()
@@ -357,6 +389,8 @@ void Authenticator::onFailed(const base::Location& location)
 
     LOG(LS_INFO) << "Authentication failed for: " << channel_->peerAddress()
                  << " (" << location.toString() << ")";
+
+    timer_.stop();
 
     // Destroy the network channel.
     channel_->setListener(nullptr);

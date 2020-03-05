@@ -16,19 +16,29 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 //
 
-#include "client/frame_factory_qimage.h"
+#include "client/ui/client_settings.h"
 
-#include "desktop/desktop_frame_qimage.h"
+#include "qt_base/qt_xml_settings.h"
 
 namespace client {
 
-FrameFactoryQImage::FrameFactoryQImage() = default;
-
-FrameFactoryQImage::~FrameFactoryQImage() = default;
-
-std::shared_ptr<desktop::Frame> FrameFactoryQImage::allocateFrame(const desktop::Size& size)
+ClientSettings::ClientSettings()
+    : settings_(qt_base::QtXmlSettings::format(),
+                QSettings::UserScope,
+                QLatin1String("aspia"),
+                QLatin1String("client"))
 {
-    return std::shared_ptr<desktop::Frame>(desktop::FrameQImage::create(size).release());
+    // Nothing
+}
+
+QStringList ClientSettings::addressList() const
+{
+    return settings_.value(QLatin1String("Client/AddressList")).toStringList();
+}
+
+void ClientSettings::setAddressList(const QStringList& list)
+{
+    settings_.setValue(QLatin1String("Client/AddressList"), list);
 }
 
 } // namespace client

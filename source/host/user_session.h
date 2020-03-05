@@ -19,15 +19,13 @@
 #ifndef HOST__USER_SESSION_H
 #define HOST__USER_SESSION_H
 
-#include "base/macros_magic.h"
-#include "base/win/session_id.h"
+#include "base/session_id.h"
+#include "base/waitable_timer.h"
 #include "host/client_session.h"
 #include "host/desktop_session_manager.h"
 #include "host/user.h"
 #include "ipc/ipc_listener.h"
-
-#include <list>
-#include <memory>
+#include "proto/host_internal.pb.h"
 
 namespace ipc {
 class Channel;
@@ -42,9 +40,18 @@ class UserSession
       public ClientSession::Delegate
 {
 public:
-    UserSession(std::shared_ptr<base::TaskRunner> task_runner,
-                std::unique_ptr<ipc::Channel> ipc_channel);
-    ~UserSession();
+    enum class Type
+    {
+        CONSOLE,
+        RDP
+    };
+
+    enum class State
+    {
+        STARTED,
+        DETTACHED,
+        FINISHED
+    };
 
     class Delegate
     {
@@ -52,15 +59,25 @@ public:
         virtual ~Delegate() = default;
 
         virtual void onUserSessionStarted() = 0;
+        virtual void onUserSessionDettached() = 0;
         virtual void onUserSessionFinished() = 0;
     };
 
-    void start(Delegate* delegate);
+    UserSession(std::shared_ptr<base::TaskRunner> task_runner,
+                base::SessionId session_id,
+                std::unique_ptr<ipc::Channel> channel);
+    ~UserSession();
 
-    base::win::SessionId sessionId() const;
+    void start(Delegate* delegate);
+    void restart(std::unique_ptr<ipc::Channel> channel);
+
+    Type type() const { return type_; }
+    State state() const { return state_; }
+    base::SessionId sessionId() const { return session_id_; }
     User user() const;
 
     void addNewSession(std::unique_ptr<ClientSession> client_session);
+    void setSessionEvent(base::win::SessionStatus status, base::SessionId session_id);
 
 protected:
     // ipc::Listener implementation.
@@ -76,25 +93,39 @@ protected:
     void onClipboardEvent(const proto::ClipboardEvent& event) override;
 
     // ClientSession::Delegate implementation.
+    void onClientSessionConfigured() override;
     void onClientSessionFinished() override;
 
 private:
+    void onSessionDettached(const base::Location& location);
     void sendConnectEvent(const ClientSession& client_session);
     void sendDisconnectEvent(const std::string& session_id);
     void updateCredentials();
     void sendCredentials();
-    void killClientSession(const std::string& id);
+    void killClientSession(std::string_view id);
 
     std::shared_ptr<base::TaskRunner> task_runner_;
-    std::unique_ptr<ipc::Channel> ipc_channel_;
+    std::unique_ptr<ipc::Channel> channel_;
 
-    base::win::SessionId session_id_ = base::win::kInvalidSessionId;
+    Type type_;
+    State state_ = State::DETTACHED;
+    base::WaitableTimer attach_timer_;
+
+    base::SessionId session_id_;
     std::string username_;
     std::string password_;
 
-    std::list<std::unique_ptr<ClientSession>> clients_;
+    using ClientSessionPtr = std::unique_ptr<ClientSession>;
+    using ClientSessionList = std::vector<ClientSessionPtr>;
+
+    ClientSessionList desktop_clients_;
+    ClientSessionList file_transfer_clients_;
+
     std::unique_ptr<DesktopSessionManager> desktop_session_;
     std::shared_ptr<DesktopSessionProxy> desktop_session_proxy_;
+
+    proto::internal::UiToService incoming_message_;
+    proto::internal::ServiceToUi outgoing_message_;
 
     Delegate* delegate_ = nullptr;
 

@@ -19,9 +19,8 @@
 #include "host/desktop_session_fake.h"
 
 #include "base/logging.h"
+#include "base/task_runner.h"
 #include "desktop/desktop_frame_simple.h"
-#include "desktop/shared_desktop_frame.h"
-#include "proto/desktop.pb.h"
 
 namespace host {
 
@@ -29,79 +28,104 @@ namespace {
 
 const int kFrameWidth = 800;
 const int kFrameHeight = 600;
-const int kBoxWidth = 50;
-const int kBoxHeight = 50;
-
-static_assert(kBoxWidth < kFrameWidth && kBoxHeight < kFrameHeight);
-static_assert((kFrameWidth % kBoxWidth) == 0 && (kFrameHeight % kBoxHeight) == 0);
 
 } // namespace
 
-DesktopSessionFake::DesktopSessionFake(Delegate* delegate)
-    : box_speed_x_(kBoxWidth),
-      box_speed_y_(kBoxHeight),
+class DesktopSessionFake::FrameGenerator : public std::enable_shared_from_this<FrameGenerator>
+{
+public:
+    explicit FrameGenerator(std::shared_ptr<base::TaskRunner> task_runner);
+    ~FrameGenerator() = default;
+
+    void start(Delegate* delegate);
+    void stop();
+
+private:
+    void generateFrame();
+
+    Delegate* delegate_ = nullptr;
+
+    std::shared_ptr<base::TaskRunner> task_runner_;
+    std::unique_ptr<desktop::Frame> frame_;
+
+    DISALLOW_COPY_AND_ASSIGN(FrameGenerator);
+};
+
+DesktopSessionFake::FrameGenerator::FrameGenerator(std::shared_ptr<base::TaskRunner> task_runner)
+    : task_runner_(std::move(task_runner))
+{
+    DCHECK(task_runner_);
+}
+
+void DesktopSessionFake::FrameGenerator::start(Delegate* delegate)
+{
+    delegate_ = delegate;
+    DCHECK(delegate);
+
+    frame_ = desktop::FrameSimple::create(
+        desktop::Size(kFrameWidth, kFrameHeight), desktop::PixelFormat::ARGB());
+
+    memset(frame_->frameData(), 0, frame_->stride() * frame_->size().height());
+
+    generateFrame();
+}
+
+void DesktopSessionFake::FrameGenerator::stop()
+{
+    delegate_ = nullptr;
+}
+
+void DesktopSessionFake::FrameGenerator::generateFrame()
+{
+    desktop::Region* updated_region = frame_->updatedRegion();
+    updated_region->clear();
+    updated_region->addRect(desktop::Rect::makeWH(kFrameWidth, kFrameHeight));
+
+    if (delegate_)
+    {
+        delegate_->onScreenCaptured(*frame_);
+
+        task_runner_->postDelayedTask(
+            std::bind(&FrameGenerator::generateFrame, shared_from_this()),
+            std::chrono::milliseconds(1000));
+    }
+    else
+    {
+        frame_.reset();
+    }
+}
+
+DesktopSessionFake::DesktopSessionFake(
+    std::shared_ptr<base::TaskRunner> task_runner, Delegate* delegate)
+    : frame_generator_(std::make_shared<FrameGenerator>(std::move(task_runner))),
       delegate_(delegate)
 {
     DCHECK(delegate_);
 }
 
-DesktopSessionFake::~DesktopSessionFake() = default;
+DesktopSessionFake::~DesktopSessionFake()
+{
+    frame_generator_->stop();
+}
 
 void DesktopSessionFake::start()
 {
-    std::unique_ptr<desktop::Frame> frame = desktop::FrameSimple::create(
-        desktop::Size(kFrameWidth, kFrameHeight), desktop::PixelFormat::ARGB());
-
-    memset(frame->frameData(), 0, frame->stride() * frame->size().height());
-
-    frame_ = desktop::SharedFrame::wrap(std::move(frame));
+    if (delegate_)
+        delegate_->onDesktopSessionStarted();
 }
 
-void DesktopSessionFake::startSession()
+void DesktopSessionFake::stop()
 {
-    int old_box_pos_x = box_pos_x_;
-    int old_box_pos_y = box_pos_y_;
-
-    if (box_pos_x_ + kBoxWidth >= kFrameWidth || box_pos_x_ == 0)
-        box_speed_x_ = -box_speed_x_;
-
-    if (box_pos_y_ + kBoxHeight >= kFrameHeight || box_pos_y_ == 0)
-        box_speed_y_ = -box_speed_y_;
-
-    box_pos_x_ += box_speed_x_;
-    box_pos_y_ += box_speed_y_;
-
-    // Clear previous box position.
-    for (int y = 0; y < kBoxHeight; ++y)
-    {
-        uint8_t* data = frame_->frameDataAtPos(old_box_pos_x, old_box_pos_y);
-        memset(data, 0, kBoxWidth * frame_->format().bytesPerPixel());
-    }
-
-    // Draw the box in a new position.
-    for (int y = 0; y < kBoxHeight; ++y)
-    {
-        uint32_t* data = reinterpret_cast<uint32_t*>(
-            frame_->frameDataAtPos(box_pos_x_, box_pos_y_));
-
-        for (int x = 0; x < kBoxWidth; ++x)
-            data[x] = color_queue_[color_index_];
-    }
-
-    desktop::Region* updated_region = frame_->updatedRegion();
-
-    updated_region->clear();
-    updated_region->addRect(
-        desktop::Rect::makeXYWH(old_box_pos_x, old_box_pos_y, kBoxWidth, kBoxHeight));
-    updated_region->addRect(
-        desktop::Rect::makeXYWH(box_pos_x_, box_pos_y_, kBoxWidth, kBoxHeight));
-
-    delegate_->onScreenCaptured(*frame_);
+    delegate_ = nullptr;
+    frame_generator_->stop();
 }
 
-void DesktopSessionFake::stopSession()
+void DesktopSessionFake::enableSession(bool enable)
 {
-    // TODO
+    if (enable)
+        frame_generator_->start(delegate_);
+    else
+        frame_generator_->stop();
 }
 
 void DesktopSessionFake::selectScreen(const proto::Screen& /* screen */)
@@ -109,47 +133,30 @@ void DesktopSessionFake::selectScreen(const proto::Screen& /* screen */)
     // Nothing
 }
 
-void DesktopSessionFake::setFeatures(const proto::internal::SetFeatures& /* features */)
+void DesktopSessionFake::enableFeatures(const proto::internal::EnableFeatures& /* features */)
 {
     // Nothing
 }
 
-void DesktopSessionFake::injectKeyEvent(const proto::KeyEvent& event)
+void DesktopSessionFake::injectKeyEvent(const proto::KeyEvent& /* event */)
 {
-    // When release the button, change the color of the box.
-    if (!(event.flags() & proto::KeyEvent::PRESSED))
-        nextBoxColor();
+    // Nothing
 }
 
-void DesktopSessionFake::injectPointerEvent(const proto::PointerEvent& event)
+void DesktopSessionFake::injectPointerEvent(const proto::PointerEvent& /* event */)
 {
-    if (event.mask() == prev_pointer_mask_)
-        return;
-
-    // When click the mouse button, change the color of the box.
-    nextBoxColor();
-
-    prev_pointer_mask_ = event.mask();
+    // Nothing
 }
 
 void DesktopSessionFake::injectClipboardEvent(const proto::ClipboardEvent& /* event */)
 {
-    // Nothing. Ignore the event.
-}
-
-void DesktopSessionFake::logoffUserSession()
-{
     // Nothing
 }
 
-void DesktopSessionFake::lockUserSession()
+void DesktopSessionFake::userSessionControl(
+    proto::internal::UserSessionControl::Action /* action */)
 {
     // Nothing
-}
-
-void DesktopSessionFake::nextBoxColor()
-{
-    color_index_ = (color_index_ + 1) % kQueueLength;
 }
 
 } // namespace host

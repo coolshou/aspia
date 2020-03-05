@@ -16,21 +16,19 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 //
 
-#include "base/win/session_id.h"
+#include "console/mru_action.h"
 
-#include <limits>
-#include <type_traits>
+namespace console {
 
-#include <Windows.h>
-
-namespace base::win {
-
-static_assert(std::is_same<SessionId, DWORD>());
-static_assert(kInvalidSessionId == std::numeric_limits<DWORD>::max());
-
-SessionId activeConsoleSessionId()
+MruAction::MruAction(const QString& file, QObject* parent)
+    : QAction(file, parent),
+    file_path_(file)
 {
-    return WTSGetActiveConsoleSessionId();
+    if (file.isEmpty())
+    {
+        setText(tr("<empty>"));
+        setEnabled(false);
+    }
 }
 
-} // namespace base::win
+} // namespace console

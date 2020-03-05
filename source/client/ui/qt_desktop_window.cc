@@ -23,13 +23,13 @@
 #include "base/strings/string_split.h"
 #include "client/client_desktop.h"
 #include "client/desktop_control_proxy.h"
-#include "client/frame_factory_qimage.h"
 #include "client/ui/desktop_config_dialog.h"
 #include "client/ui/desktop_panel.h"
+#include "client/ui/frame_factory_qimage.h"
+#include "client/ui/frame_qimage.h"
 #include "client/ui/qt_file_manager_window.h"
 #include "client/ui/system_info_window.h"
 #include "common/desktop_session_constants.h"
-#include "desktop/desktop_frame_qimage.h"
 #include "desktop/mouse_cursor.h"
 
 #include <QApplication>
@@ -158,16 +158,18 @@ QtDesktopWindow::QtDesktopWindow(proto::SessionType session_type,
             return;
 
         client_window->setAttribute(Qt::WA_DeleteOnClose);
-        client_window->connectToHost(session_config);
+        if (!client_window->connectToHost(session_config))
+            client_window->close();
     });
 }
 
 QtDesktopWindow::~QtDesktopWindow() = default;
 
 std::unique_ptr<Client> QtDesktopWindow::createClient(
-    std::shared_ptr<base::TaskRunner>& ui_task_runner)
+    std::shared_ptr<base::TaskRunner> ui_task_runner)
 {
-    std::unique_ptr<ClientDesktop> client = std::make_unique<ClientDesktop>(ui_task_runner);
+    std::unique_ptr<ClientDesktop> client =
+        std::make_unique<ClientDesktop>(std::move(ui_task_runner));
 
     client->setDesktopConfig(desktop_config_);
     client->setDesktopWindow(this);
@@ -449,7 +451,7 @@ void QtDesktopWindow::takeScreenshot()
     if (file_path.isEmpty() || selected_filter.isEmpty())
         return;
 
-    desktop::FrameQImage* frame = dynamic_cast<desktop::FrameQImage*>(desktop_->desktopFrame());
+    FrameQImage* frame = static_cast<FrameQImage*>(desktop_->desktopFrame());
     if (!frame)
         return;
 

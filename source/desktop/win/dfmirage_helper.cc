@@ -16,7 +16,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 //
 
-#include "desktop/dfmirage_helper.h"
+#include "desktop/win/dfmirage_helper.h"
 
 #include "base/strings/string_util.h"
 #include "desktop/desktop_frame.h"
@@ -161,7 +161,7 @@ bool DFMirageHelper::update(bool load)
         device_mode.dmBitsPerPel = kBitsPerPixel;
     }
 
-    wcsncpy_s(device_mode.dmDeviceName, _countof(device_mode.dmDeviceName),
+    wcsncpy_s(device_mode.dmDeviceName, std::size(device_mode.dmDeviceName),
               device_name_.c_str(), device_name_.length());
 
     LONG status = ChangeDisplaySettingsExW(

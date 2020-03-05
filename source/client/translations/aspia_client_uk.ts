@@ -52,12 +52,12 @@
         <translation type="obsolete">Пароль:</translation>
     </message>
     <message>
-        <location filename="../ui/client_dialog.ui" line="45"/>
+        <location filename="../ui/client_dialog.ui" line="69"/>
         <source>Session Type:</source>
         <translation>Тип сесії:</translation>
     </message>
     <message>
-        <location filename="../ui/client_dialog.ui" line="102"/>
+        <location filename="../ui/client_dialog.ui" line="126"/>
         <source>Connect</source>
         <translation>Підключити</translation>
     </message>
@@ -335,6 +335,11 @@
     </message>
     <message>
         <location filename="../ui/file_error_code.cc" line="84"/>
+        <source>No logged in user</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/file_error_code.cc" line="88"/>
         <source>Unknown error code</source>
         <translation type="unfinished"></translation>
     </message>
@@ -864,12 +869,22 @@
         <translation type="vanished">Передача файлів</translation>
     </message>
     <message>
-        <location filename="../ui/client_dialog.cc" line="137"/>
+        <location filename="../ui/client_dialog.cc" line="74"/>
+        <source>Confirmation</source>
+        <translation type="unfinished">Підтвердження</translation>
+    </message>
+    <message>
+        <location filename="../ui/client_dialog.cc" line="75"/>
+        <source>The list of entered addresses will be cleared. Continue?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/client_dialog.cc" line="161"/>
         <source>Warning</source>
         <translation type="unfinished">Попередження</translation>
     </message>
     <message>
-        <location filename="../ui/client_dialog.cc" line="138"/>
+        <location filename="../ui/client_dialog.cc" line="162"/>
         <source>An invalid computer address was entered.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -892,93 +907,98 @@
 <context>
     <name>client::ClientWindow</name>
     <message>
-        <location filename="../ui/client_window.cc" line="90"/>
+        <location filename="../ui/client_window.cc" line="91"/>
         <source>Attempt to connect to %1:%2.</source>
         <translation>Спроба підключення до %1:%2.</translation>
     </message>
     <message>
-        <location filename="../ui/client_window.cc" line="100"/>
+        <location filename="../ui/client_window.cc" line="101"/>
         <source>Connection established.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/client_window.cc" line="111"/>
+        <location filename="../ui/client_window.cc" line="112"/>
+        <source>Cryptography error (message encryption or decryption failed).</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/client_window.cc" line="116"/>
         <source>An error occurred with the network (e.g., the network cable was accidentally plugged out).</source>
         <translation type="unfinished">Виникла помилка з мережею (напр., мережевий кабель випадково від&apos;єднано).</translation>
     </message>
     <message>
-        <location filename="../ui/client_window.cc" line="115"/>
+        <location filename="../ui/client_window.cc" line="120"/>
         <source>Connection was refused by the peer (or timed out).</source>
         <translation type="unfinished">З&apos;єднання відхилено піром (або час вийшов).</translation>
     </message>
     <message>
-        <location filename="../ui/client_window.cc" line="119"/>
+        <location filename="../ui/client_window.cc" line="124"/>
         <source>Remote host closed the connection.</source>
         <translation type="unfinished">Віддалений хост закрив з&apos;єднання.</translation>
     </message>
     <message>
-        <location filename="../ui/client_window.cc" line="123"/>
+        <location filename="../ui/client_window.cc" line="128"/>
         <source>Host address was not found.</source>
         <translation type="unfinished">Адресу хоста не знайдено.</translation>
     </message>
     <message>
-        <location filename="../ui/client_window.cc" line="127"/>
+        <location filename="../ui/client_window.cc" line="132"/>
         <source>Socket operation timed out.</source>
         <translation type="unfinished">Вийшов час операції сокета.</translation>
     </message>
     <message>
-        <location filename="../ui/client_window.cc" line="131"/>
+        <location filename="../ui/client_window.cc" line="136"/>
         <source>Address specified is already in use and was set to be exclusive.</source>
         <translation type="unfinished">Введена адреса вже використовується і встановлена як унікальна.</translation>
     </message>
     <message>
-        <location filename="../ui/client_window.cc" line="135"/>
+        <location filename="../ui/client_window.cc" line="140"/>
         <source>Address specified does not belong to the host.</source>
         <translation type="unfinished">Введена адреса не належить хосту.</translation>
     </message>
     <message>
-        <location filename="../ui/client_window.cc" line="145"/>
-        <location filename="../ui/client_window.cc" line="180"/>
+        <location filename="../ui/client_window.cc" line="150"/>
+        <location filename="../ui/client_window.cc" line="185"/>
         <source>An unknown error occurred.</source>
         <translation type="unfinished">Виникла невідома помилка.</translation>
     </message>
     <message>
-        <location filename="../ui/client_window.cc" line="160"/>
+        <location filename="../ui/client_window.cc" line="165"/>
         <source>Authentication successfully completed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/client_window.cc" line="164"/>
+        <location filename="../ui/client_window.cc" line="169"/>
         <source>Network authentication error.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/client_window.cc" line="168"/>
+        <location filename="../ui/client_window.cc" line="173"/>
         <source>Violation of the data exchange protocol.</source>
         <translation type="unfinished">Порушення в протоколі передачі даних.</translation>
     </message>
     <message>
-        <location filename="../ui/client_window.cc" line="172"/>
+        <location filename="../ui/client_window.cc" line="177"/>
         <source>An error occured while authenticating: wrong user name or password.</source>
         <translation type="unfinished">Виникла помилка під час аутентифікації: невірне ім&apos;я користувача або пароль.</translation>
     </message>
     <message>
-        <location filename="../ui/client_window.cc" line="176"/>
+        <location filename="../ui/client_window.cc" line="181"/>
         <source>Specified session type is not allowed for the user.</source>
         <translation type="unfinished">Обраний тип сесії не дозволений для користувача.</translation>
     </message>
     <message>
-        <location filename="../ui/client_window.cc" line="194"/>
+        <location filename="../ui/client_window.cc" line="199"/>
         <source>Desktop Manage</source>
         <translation type="unfinished">Керування робочим столом</translation>
     </message>
     <message>
-        <location filename="../ui/client_window.cc" line="198"/>
+        <location filename="../ui/client_window.cc" line="203"/>
         <source>Desktop View</source>
         <translation type="unfinished">Перегляд робочого столу</translation>
     </message>
     <message>
-        <location filename="../ui/client_window.cc" line="202"/>
+        <location filename="../ui/client_window.cc" line="207"/>
         <source>File Transfer</source>
         <translation type="unfinished">Передача файлів</translation>
     </message>
@@ -1431,19 +1451,19 @@
         <translation type="obsolete">Перегляд робочого столу</translation>
     </message>
     <message>
-        <location filename="../ui/qt_desktop_window.cc" line="196"/>
-        <location filename="../ui/qt_desktop_window.cc" line="204"/>
-        <location filename="../ui/qt_desktop_window.cc" line="467"/>
+        <location filename="../ui/qt_desktop_window.cc" line="198"/>
+        <location filename="../ui/qt_desktop_window.cc" line="206"/>
+        <location filename="../ui/qt_desktop_window.cc" line="469"/>
         <source>Warning</source>
         <translation type="unfinished">Попередження</translation>
     </message>
     <message>
-        <location filename="../ui/qt_desktop_window.cc" line="197"/>
+        <location filename="../ui/qt_desktop_window.cc" line="199"/>
         <source>There are no supported video encodings.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/qt_desktop_window.cc" line="205"/>
+        <location filename="../ui/qt_desktop_window.cc" line="207"/>
         <source>The current video encoding is not supported by the host. Please specify a different video encoding.</source>
         <translation type="unfinished">Обране кодування відео не підтримується хостом. Будь ласка, оберіть інше кодування відео.</translation>
     </message>
@@ -1452,17 +1472,17 @@
         <translation type="obsolete">Вибір підтримуваного кодування відео відмінено користувачем.</translation>
     </message>
     <message>
-        <location filename="../ui/qt_desktop_window.cc" line="445"/>
+        <location filename="../ui/qt_desktop_window.cc" line="447"/>
         <source>Save File</source>
         <translation type="unfinished">Зберегти файл</translation>
     </message>
     <message>
-        <location filename="../ui/qt_desktop_window.cc" line="447"/>
+        <location filename="../ui/qt_desktop_window.cc" line="449"/>
         <source>PNG Image (*.png);;BMP Image (*.bmp)</source>
         <translation type="unfinished">Зображення PNG (*.png);;Зображення BMP (*.bmp)</translation>
     </message>
     <message>
-        <location filename="../ui/qt_desktop_window.cc" line="467"/>
+        <location filename="../ui/qt_desktop_window.cc" line="469"/>
         <source>Could not save image</source>
         <translation type="unfinished">Неможливо зберегти зображення</translation>
     </message>
@@ -1470,14 +1490,24 @@
 <context>
     <name>client::QtFileManagerWindow</name>
     <message>
-        <location filename="../ui/qt_file_manager_window.cc" line="46"/>
+        <location filename="../ui/qt_file_manager_window.cc" line="49"/>
         <source>Local Computer</source>
         <translation type="unfinished">Локальний комп&apos;ютер</translation>
     </message>
     <message>
-        <location filename="../ui/qt_file_manager_window.cc" line="47"/>
+        <location filename="../ui/qt_file_manager_window.cc" line="50"/>
         <source>Remote Computer</source>
         <translation type="unfinished">Віддалений комп&apos;ютер</translation>
+    </message>
+    <message>
+        <location filename="../ui/qt_file_manager_window.cc" line="81"/>
+        <source>Warning</source>
+        <translation type="unfinished">Попередження</translation>
+    </message>
+    <message>
+        <location filename="../ui/qt_file_manager_window.cc" line="82"/>
+        <source>Session error: %1</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

@@ -16,42 +16,30 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 //
 
-#ifndef DESKTOP__MV2_H
-#define DESKTOP__MV2_H
+#ifndef CONSOLE__MRU_ACTION_H
+#define CONSOLE__MRU_ACTION_H
 
-#include <cstdint>
+#include "base/macros_magic.h"
 
-namespace desktop {
+#include <QAction>
 
-static const int kMv2MaxChanges = 2000;
+namespace console {
 
-typedef struct
+class MruAction : public QAction
 {
-    long left;
-    long top;
-    long right;
-    long bottom;
-} Mv2Rect;
+    Q_OBJECT
 
-typedef struct
-{
-    long x;
-    long y;
-} Mv2Point;
+public:
+    MruAction(const QString& file, QObject* parent = nullptr);
 
-typedef struct
-{
-    uint32_t type;
-    Mv2Rect rect;
-    Mv2Point point;
-} Mv2ChangesRecord;
+    QString filePath() const { return file_path_; }
 
-typedef struct
-{
-    uint32_t counter;
-    Mv2ChangesRecord records[kMv2MaxChanges];
-} Mv2ChangesBuffer;
+private:
+    QString file_path_;
 
-} // desktop
+    DISALLOW_COPY_AND_ASSIGN(MruAction);
+};
 
-#endif // DESKTOP__MV2_H
+} // namespace console
+
+#endif // CONSOLE__MRU_ACTION_H

@@ -35,10 +35,10 @@ const wchar_t kFirewallRuleDecription[] = L"Allow incoming TCP connections";
 
 } // namespace
 
-Server::Server(std::shared_ptr<base::TaskRunner>& task_runner)
-    : task_runner_(task_runner)
+Server::Server(std::shared_ptr<base::TaskRunner> task_runner)
+    : task_runner_(std::move(task_runner))
 {
-    // Nothing
+    DCHECK(task_runner_);
 }
 
 Server::~Server()
@@ -83,7 +83,7 @@ void Server::start()
         }
     });
 
-    authenticator_manager_ = std::make_unique<AuthenticatorManager>(this);
+    authenticator_manager_ = std::make_unique<AuthenticatorManager>(task_runner_, this);
 
     user_session_manager_ = std::make_unique<UserSessionManager>(task_runner_);
     user_session_manager_->start(this);
@@ -97,7 +97,7 @@ void Server::start()
     LOG(LS_INFO) << "Host server is started successfully";
 }
 
-void Server::setSessionEvent(base::win::SessionStatus status, base::win::SessionId session_id)
+void Server::setSessionEvent(base::win::SessionStatus status, base::SessionId session_id)
 {
     if (user_session_manager_)
         user_session_manager_->setSessionEvent(status, session_id);

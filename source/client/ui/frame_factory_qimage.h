@@ -16,32 +16,26 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 //
 
-#ifndef HOST__USER_SESSION_PROCESS_PROXY_H
-#define HOST__USER_SESSION_PROCESS_PROXY_H
+#ifndef CLIENT__UI__FRAME_FACTORY_QIMAGE_H
+#define CLIENT__UI__FRAME_FACTORY_QIMAGE_H
 
-#include "host/user_session_process.h"
+#include "base/macros_magic.h"
+#include "client/frame_factory.h"
 
-namespace host {
+namespace client {
 
-class UserSessionProcessProxy : public std::enable_shared_from_this<UserSessionProcessProxy>
+class FrameFactoryQImage : public FrameFactory
 {
 public:
-    UserSessionProcessProxy(
-        std::shared_ptr<base::TaskRunner> io_task_runner, UserSessionProcess* process);
-    ~UserSessionProcessProxy();
+    FrameFactoryQImage();
+    ~FrameFactoryQImage();
 
-    void dettach();
-
-    void updateCredentials(proto::CredentialsRequest::Type request_type);
-    void killClient(const std::string& uuid);
+    std::shared_ptr<desktop::Frame> allocateFrame(const desktop::Size& size) override;
 
 private:
-    std::shared_ptr<base::TaskRunner> io_task_runner_;
-    UserSessionProcess* process_;
-
-    DISALLOW_COPY_AND_ASSIGN(UserSessionProcessProxy);
+    DISALLOW_COPY_AND_ASSIGN(FrameFactoryQImage);
 };
 
-} // namespace host
+} // namespace client
 
-#endif // HOST__USER_SESSION_PROCESS_PROXY_H
+#endif // CLIENT__UI__FRAME_FACTORY_QIMAGE_H

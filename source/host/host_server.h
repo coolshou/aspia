@@ -37,11 +37,11 @@ class Server
       public UserSessionManager::Delegate
 {
 public:
-    Server(std::shared_ptr<base::TaskRunner>& task_runner);
+    explicit Server(std::shared_ptr<base::TaskRunner> task_runner);
     ~Server();
 
     void start();
-    void setSessionEvent(base::win::SessionStatus status, base::win::SessionId session_id);
+    void setSessionEvent(base::win::SessionStatus status, base::SessionId session_id);
 
 protected:
     // net::Server::Delegate implementation.

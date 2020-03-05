@@ -31,7 +31,7 @@ bool BasePaths::windowsDir(std::filesystem::path* result)
 
     wchar_t buffer[MAX_PATH] = { 0 };
 
-    if (!GetWindowsDirectoryW(buffer, _countof(buffer)))
+    if (!GetWindowsDirectoryW(buffer, std::size(buffer)))
     {
         PLOG(LS_ERROR) << "GetWindowsDirectoryW failed";
         return false;
@@ -48,7 +48,7 @@ bool BasePaths::systemDir(std::filesystem::path* result)
 
     wchar_t buffer[MAX_PATH] = { 0 };
 
-    if (!::GetSystemDirectoryW(buffer, _countof(buffer)))
+    if (!GetSystemDirectoryW(buffer, std::size(buffer)))
     {
         PLOG(LS_ERROR) << "GetSystemDirectoryW failed";
         return false;
@@ -68,7 +68,7 @@ bool BasePaths::userAppData(std::filesystem::path* result)
     HRESULT hr = SHGetFolderPathW(nullptr, CSIDL_APPDATA, nullptr, SHGFP_TYPE_CURRENT, buffer);
     if (FAILED(hr))
     {
-        LOG(LS_ERROR) << "SHGetFolderPathW failed: " << SystemError(hr).toString();
+        LOG(LS_ERROR) << "SHGetFolderPathW failed: " << SystemError::toString(hr);
         return false;
     }
 
@@ -87,7 +87,7 @@ bool BasePaths::userDesktop(std::filesystem::path* result)
                                   nullptr, SHGFP_TYPE_CURRENT, buffer);
     if (FAILED(hr))
     {
-        LOG(LS_ERROR) << "SHGetFolderPathW failed: " << SystemError(hr).toString();
+        LOG(LS_ERROR) << "SHGetFolderPathW failed: " << SystemError::toString(hr);
         return false;
     }
 
@@ -105,7 +105,7 @@ bool BasePaths::userHome(std::filesystem::path* result)
     HRESULT hr = SHGetFolderPathW(nullptr, CSIDL_PROFILE, nullptr, SHGFP_TYPE_CURRENT, buffer);
     if (FAILED(hr))
     {
-        LOG(LS_ERROR) << "SHGetFolderPathW failed: " << SystemError(hr).toString();
+        LOG(LS_ERROR) << "SHGetFolderPathW failed: " << SystemError::toString(hr);
         return false;
     }
 
@@ -124,7 +124,7 @@ bool BasePaths::commonAppData(std::filesystem::path* result)
                                   nullptr, SHGFP_TYPE_CURRENT, buffer);
     if (FAILED(hr))
     {
-        LOG(LS_ERROR) << "SHGetFolderPathW failed: " << SystemError(hr).toString();
+        LOG(LS_ERROR) << "SHGetFolderPathW failed: " << SystemError::toString(hr);
         return false;
     }
 
@@ -143,7 +143,7 @@ bool BasePaths::commonDesktop(std::filesystem::path* result)
                                   nullptr, SHGFP_TYPE_CURRENT, buffer);
     if (FAILED(hr))
     {
-        LOG(LS_ERROR) << "SHGetFolderPathW failed: " << SystemError(hr).toString();
+        LOG(LS_ERROR) << "SHGetFolderPathW failed: " << SystemError::toString(hr);
         return false;
     }
 
@@ -172,7 +172,7 @@ bool BasePaths::currentExecFile(std::filesystem::path* result)
 
     wchar_t buffer[MAX_PATH] = { 0 };
 
-    if (!GetModuleFileNameW(nullptr, buffer, _countof(buffer)))
+    if (!GetModuleFileNameW(nullptr, buffer, std::size(buffer)))
     {
         PLOG(LS_ERROR) << "GetModuleFileNameW failed";
         return false;

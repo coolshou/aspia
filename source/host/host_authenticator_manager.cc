@@ -19,15 +19,18 @@
 #include "host/host_authenticator_manager.h"
 
 #include "base/logging.h"
+#include "base/task_runner.h"
 #include "host/client_session.h"
 #include "net/network_channel.h"
 
 namespace host {
 
-AuthenticatorManager::AuthenticatorManager(Delegate* delegate)
-    : delegate_(delegate)
+AuthenticatorManager::AuthenticatorManager(
+    std::shared_ptr<base::TaskRunner> task_runner, Delegate* delegate)
+    : task_runner_(std::move(task_runner)),
+      delegate_(delegate)
 {
-    DCHECK(delegate_);
+    DCHECK(task_runner_ && delegate_);
 }
 
 AuthenticatorManager::~AuthenticatorManager() = default;
@@ -43,7 +46,7 @@ void AuthenticatorManager::addNewChannel(std::unique_ptr<net::Channel> channel)
     DCHECK(channel);
 
     // Create a new authenticator for the connection and put it on the list.
-    pending_.emplace_back(std::make_unique<Authenticator>());
+    pending_.emplace_back(std::make_unique<Authenticator>(task_runner_));
 
     // Start the authentication process.
     pending_.back()->start(std::move(channel), userlist_, this);
@@ -58,17 +61,13 @@ void AuthenticatorManager::onComplete()
         switch (current->state())
         {
             case Authenticator::State::SUCCESS:
-            {
-                delegate_->onNewSession(current->takeSession());
-
-                // Authenticator not needed anymore.
-                it = pending_.erase(it);
-            }
-            break;
-
             case Authenticator::State::FAILED:
             {
-                // Authentication failed, delete the connection.
+                if (current->state() == Authenticator::State::SUCCESS)
+                    delegate_->onNewSession(current->takeSession());
+
+                // Authenticator not needed anymore.
+                task_runner_->deleteSoon(std::move(*it));
                 it = pending_.erase(it);
             }
             break;

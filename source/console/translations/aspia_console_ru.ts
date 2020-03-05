@@ -358,228 +358,238 @@
         <translation>Последние открытые</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="84"/>
+        <location filename="../console_main_window.ui" line="87"/>
         <source>&amp;Edit</source>
         <translation>&amp;Правка</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="98"/>
+        <location filename="../console_main_window.ui" line="101"/>
         <source>&amp;Session Type</source>
         <translation>&amp;Тип сессии</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="106"/>
+        <location filename="../console_main_window.ui" line="109"/>
         <source>&amp;Help</source>
         <translation>П&amp;омощь</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="117"/>
+        <location filename="../console_main_window.ui" line="120"/>
         <source>&amp;View</source>
         <translation>&amp;Вид</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="121"/>
+        <location filename="../console_main_window.ui" line="124"/>
         <source>&amp;Language</source>
         <translation>&amp;Язык</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="144"/>
-        <location filename="../console_main_window.ui" line="438"/>
+        <location filename="../console_main_window.ui" line="147"/>
+        <location filename="../console_main_window.ui" line="441"/>
         <source>Tool Bar</source>
         <translation>Панель инструментов</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="186"/>
+        <location filename="../console_main_window.ui" line="189"/>
         <source>&amp;New address book</source>
         <translation>&amp;Новая адресная книга</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="189"/>
+        <location filename="../console_main_window.ui" line="192"/>
         <source>Ctrl+N</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="198"/>
+        <location filename="../console_main_window.ui" line="201"/>
         <source>&amp;Open address book...</source>
         <translation>&amp;Открыть адресную книгу...</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="201"/>
+        <location filename="../console_main_window.ui" line="204"/>
         <source>Ctrl+O</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="213"/>
+        <location filename="../console_main_window.ui" line="216"/>
         <source>&amp;Save</source>
         <translation>&amp;Сохранить</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="216"/>
+        <location filename="../console_main_window.ui" line="219"/>
         <source>Ctrl+S</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="224"/>
+        <location filename="../console_main_window.ui" line="227"/>
         <source>Save &amp;as...</source>
         <translation>&amp;Сохранить как...</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="227"/>
+        <location filename="../console_main_window.ui" line="230"/>
         <source>Ctrl+Alt+S</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="235"/>
+        <location filename="../console_main_window.ui" line="238"/>
         <source>&amp;Close</source>
         <translation>&amp;Закрыть</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="238"/>
+        <location filename="../console_main_window.ui" line="241"/>
         <source>Ctrl+W</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="247"/>
+        <location filename="../console_main_window.ui" line="250"/>
         <source>&amp;Exit</source>
         <translation>&amp;Выход</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="259"/>
+        <location filename="../console_main_window.ui" line="262"/>
         <source>Add Computer Group</source>
         <translation>Добавить группу компьютеров</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="271"/>
+        <location filename="../console_main_window.ui" line="274"/>
         <source>Modify Computer Group</source>
         <translation>Изменить группу компьютеров</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="283"/>
+        <location filename="../console_main_window.ui" line="286"/>
         <source>Delete Computer Group</source>
         <translation>Удалить группу компьютеров</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="295"/>
+        <location filename="../console_main_window.ui" line="298"/>
         <source>Add Computer</source>
         <translation>Добавить компьютер</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="307"/>
+        <location filename="../console_main_window.ui" line="310"/>
         <source>Modify Computer</source>
         <translation>Изменить компьютер</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="319"/>
+        <location filename="../console_main_window.ui" line="322"/>
         <source>Delete Computer</source>
         <translation>Удалить компьютер</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="334"/>
+        <location filename="../console_main_window.ui" line="337"/>
         <source>Desktop &amp;Manage</source>
         <translation>Управление &amp;рабочим столом</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="346"/>
+        <location filename="../console_main_window.ui" line="349"/>
         <source>Desktop &amp;View</source>
         <translation>&amp;Просмотр рабочего стола</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="358"/>
+        <location filename="../console_main_window.ui" line="361"/>
         <source>&amp;File Transfer</source>
         <translation>Передача &amp;файлов</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="367"/>
+        <location filename="../console_main_window.ui" line="370"/>
         <source>&amp;Online Help...</source>
         <translation>Онлайн &amp;справка...</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="370"/>
+        <location filename="../console_main_window.ui" line="373"/>
         <source>F1</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="379"/>
+        <location filename="../console_main_window.ui" line="382"/>
         <source>&amp;About</source>
         <translation>&amp;О программе</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="391"/>
+        <location filename="../console_main_window.ui" line="394"/>
         <source>Address Book Properties</source>
         <translation>Свойства адресной книги</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="400"/>
         <location filename="../console_main_window.ui" line="403"/>
+        <location filename="../console_main_window.ui" line="406"/>
         <source>Desktop Manage</source>
         <translation>Управление рабочим столом</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="412"/>
         <location filename="../console_main_window.ui" line="415"/>
+        <location filename="../console_main_window.ui" line="418"/>
         <source>Desktop View</source>
         <translation>Просмотр рабочего стола</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="424"/>
         <location filename="../console_main_window.ui" line="427"/>
+        <location filename="../console_main_window.ui" line="430"/>
         <source>File Transfer</source>
         <translation>Передача файлов</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="449"/>
+        <location filename="../console_main_window.ui" line="452"/>
         <source>Status Bar</source>
         <translation>Строка состояния</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="458"/>
+        <location filename="../console_main_window.ui" line="461"/>
         <source>Fast Connect...</source>
         <translation>Быстрое подключение...</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="466"/>
+        <location filename="../console_main_window.ui" line="469"/>
         <source>Show tray icon</source>
         <translation>Показывать иконку в трее</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="474"/>
+        <location filename="../console_main_window.ui" line="477"/>
         <source>Minimize to tray</source>
         <translation>Сворачивать в трей</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="479"/>
+        <location filename="../console_main_window.ui" line="482"/>
         <source>Hide</source>
         <translation>Спрятать</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="491"/>
+        <location filename="../console_main_window.ui" line="494"/>
         <source>Save all</source>
         <translation>Сохранить все</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="494"/>
+        <location filename="../console_main_window.ui" line="497"/>
         <source>Ctrl+Shift+S</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="502"/>
+        <location filename="../console_main_window.ui" line="505"/>
         <source>Close all</source>
         <translation>Закрыть все</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="505"/>
+        <location filename="../console_main_window.ui" line="508"/>
         <source>Ctrl+Shift+W</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="510"/>
+        <location filename="../console_main_window.ui" line="513"/>
         <source>Check for updates...</source>
         <translation>Проверить обновления...</translation>
     </message>
     <message>
-        <location filename="../console_main_window.ui" line="515"/>
+        <location filename="../console_main_window.ui" line="518"/>
         <source>Update Settings</source>
         <translation>Параметры обновления</translation>
+    </message>
+    <message>
+        <location filename="../console_main_window.ui" line="523"/>
+        <source>Clear</source>
+        <translation>Очистить</translation>
+    </message>
+    <message>
+        <location filename="../console_main_window.ui" line="534"/>
+        <source>Remember latest</source>
+        <translation>Сохранять последние</translation>
     </message>
 </context>
 <context>
@@ -1064,7 +1074,7 @@
         <translation>Введен некорректный адрес компьютера.</translation>
     </message>
     <message>
-        <location filename="../computer_dialog_general.cc" line="153"/>
+        <location filename="../computer_dialog_general.cc" line="155"/>
         <source>Warning</source>
         <translation>Предупреждение</translation>
     </message>
@@ -1187,82 +1197,95 @@
 <context>
     <name>console::MainWindow</name>
     <message>
-        <location filename="../console_main_window.cc" line="184"/>
+        <location filename="../console_main_window.cc" line="162"/>
         <source>Warning</source>
         <translation>Предупреждение</translation>
     </message>
     <message>
-        <location filename="../console_main_window.cc" line="185"/>
+        <location filename="../console_main_window.cc" line="163"/>
         <source>Pinned address book file &quot;%1&quot; was not found.&lt;br/&gt;This file will be unpinned.</source>
         <translation>Закрепленный файл адресной книги &quot;%1&quot; не найден.&lt;br/&gt;Этот файл будет откреплен.</translation>
     </message>
     <message>
-        <location filename="../console_main_window.cc" line="281"/>
+        <location filename="../console_main_window.cc" line="259"/>
         <source>Open Address Book</source>
         <translation>Открытие адресной книги</translation>
     </message>
     <message>
-        <location filename="../console_main_window.cc" line="283"/>
+        <location filename="../console_main_window.cc" line="261"/>
         <source>Aspia Address Book (*.aab)</source>
         <translation>Адресная книга Aspia (*.aab)</translation>
     </message>
     <message>
-        <location filename="../console_main_window.cc" line="513"/>
-        <location filename="../console_main_window.cc" line="856"/>
+        <location filename="../console_main_window.cc" line="500"/>
+        <location filename="../console_main_window.cc" line="805"/>
+        <location filename="../console_main_window.cc" line="882"/>
         <source>Confirmation</source>
         <translation>Подтверждение</translation>
     </message>
     <message>
-        <location filename="../console_main_window.cc" line="514"/>
-        <location filename="../console_main_window.cc" line="857"/>
+        <location filename="../console_main_window.cc" line="501"/>
+        <location filename="../console_main_window.cc" line="883"/>
         <source>Address book &quot;%1&quot; has been changed. Save changes?</source>
         <translation>Адресная книга &quot;%1&quot; изменена. Сохранить изменения?</translation>
     </message>
     <message>
-        <location filename="../console_main_window.cc" line="714"/>
+        <location filename="../console_main_window.cc" line="701"/>
         <source>Close other tabs</source>
         <translation>Закрыть другие вкладки</translation>
     </message>
     <message>
-        <location filename="../console_main_window.cc" line="722"/>
+        <location filename="../console_main_window.cc" line="709"/>
         <source>Close tab</source>
         <translation>Закрыть вкладку</translation>
     </message>
     <message>
-        <location filename="../console_main_window.cc" line="725"/>
-        <location filename="../console_main_window.cc" line="732"/>
+        <location filename="../console_main_window.cc" line="712"/>
+        <location filename="../console_main_window.cc" line="719"/>
         <source>Pin tab</source>
         <translation>Закрепить вкладку</translation>
     </message>
     <message>
-        <location filename="../console_main_window.cc" line="813"/>
+        <location filename="../console_main_window.cc" line="806"/>
+        <source>The list of recently opened address books will be cleared. Continue?</source>
+        <translation>Список недавно открытых адресных книг будет очищен. Продолжить?</translation>
+    </message>
+    <message>
+        <location filename="../console_main_window.cc" line="839"/>
         <source>Hide</source>
         <translation>Спрятать</translation>
     </message>
     <message>
-        <location filename="../console_main_window.cc" line="828"/>
+        <location filename="../console_main_window.cc" line="854"/>
         <source>Show</source>
         <translation>Показать</translation>
     </message>
     <message>
-        <location filename="../console_main_window.cc" line="937"/>
         <source>&lt;empty&gt;</source>
-        <translation>&lt;пусто&gt;</translation>
+        <translation type="vanished">&lt;пусто&gt;</translation>
     </message>
     <message>
-        <location filename="../console_main_window.cc" line="958"/>
+        <location filename="../console_main_window.cc" line="989"/>
         <source>Aspia Console</source>
         <translation>Консоль Aspia</translation>
     </message>
     <message>
-        <location filename="../console_main_window.cc" line="253"/>
+        <location filename="../console_main_window.cc" line="231"/>
         <source>Information</source>
         <translation>Информация</translation>
     </message>
     <message>
-        <location filename="../console_main_window.cc" line="254"/>
+        <location filename="../console_main_window.cc" line="232"/>
         <source>Address Book &quot;%1&quot; is already open.</source>
         <translation>Адресная книга &quot;%1&quot; уже открыта.</translation>
+    </message>
+</context>
+<context>
+    <name>console::MruAction</name>
+    <message>
+        <location filename="../mru_action.cc" line="29"/>
+        <source>&lt;empty&gt;</source>
+        <translation>&lt;пусто&gt;</translation>
     </message>
 </context>
 <context>

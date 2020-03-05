@@ -16,22 +16,19 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 //
 
-#ifndef BASE__BASE64_CONSTANTS_H
-#define BASE__BASE64_CONSTANTS_H
+#include "client/ui/frame_factory_qimage.h"
 
-#include <cstdint>
+#include "client/ui/frame_qimage.h"
 
-namespace base {
+namespace client {
 
-extern const char kE0[256];
-extern const char kE1[256];
-extern const char kE2[256];
+FrameFactoryQImage::FrameFactoryQImage() = default;
 
-extern const uint32_t kD0[256];
-extern const uint32_t kD1[256];
-extern const uint32_t kD2[256];
-extern const uint32_t kD3[256];
+FrameFactoryQImage::~FrameFactoryQImage() = default;
 
-} // namespace base
+std::shared_ptr<desktop::Frame> FrameFactoryQImage::allocateFrame(const desktop::Size& size)
+{
+    return std::shared_ptr<desktop::Frame>(FrameQImage::create(size).release());
+}
 
-#endif // BASE__BASE64_CONSTANTS_H
+} // namespace client

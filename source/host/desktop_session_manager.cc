@@ -18,6 +18,7 @@
 
 #include "host/desktop_session_manager.h"
 
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/task_runner.h"
 #include "desktop/desktop_frame.h"
@@ -42,15 +43,25 @@ DesktopSessionManager::DesktopSessionManager(
 DesktopSessionManager::~DesktopSessionManager()
 {
     state_ = State::STOPPING;
-    dettachSession();
+    dettachSession(FROM_HERE);
 }
 
-void DesktopSessionManager::attachSession(base::win::SessionId session_id)
+void DesktopSessionManager::attachSession(
+    const base::Location& location, base::SessionId session_id)
 {
+    if (state_ == State::ATTACHED)
+        return;
+
+    LOG(LS_INFO) << "Attach session with ID: " << session_id
+                 << " (from: " << location.toString() << ")";
+
     if (state_ == State::STOPPED)
     {
-        session_attach_timer_.start(
-            std::chrono::minutes(1), std::bind(&DesktopSessionManager::onErrorOccurred, this));
+        session_attach_timer_.start(std::chrono::minutes(1), [this]()
+        {
+            LOG(LS_WARNING) << "Session attach timeout";
+            onErrorOccurred();
+        });
     }
 
     state_ = State::STARTING;
@@ -60,6 +71,8 @@ void DesktopSessionManager::attachSession(base::win::SessionId session_id)
     server_ = std::make_unique<ipc::Server>();
     if (!server_->start(channel_id, this))
     {
+        LOG(LS_ERROR) << "Failed to start IPC server";
+
         onErrorOccurred();
         return;
     }
@@ -68,35 +81,41 @@ void DesktopSessionManager::attachSession(base::win::SessionId session_id)
         DesktopSessionProcess::create(session_id, channel_id);
     if (!process)
     {
+        LOG(LS_ERROR) << "Failed to create session process";
+
         onErrorOccurred();
         return;
     }
 }
 
-void DesktopSessionManager::dettachSession()
+void DesktopSessionManager::dettachSession(const base::Location& location)
 {
     if (state_ == State::STOPPED || state_ == State::DETACHED)
         return;
+
+    LOG(LS_INFO) << "Dettach session (from: " << location.toString() << ")";
 
     if (state_ != State::STOPPING)
         state_ = State::DETACHED;
 
     session_attach_timer_.stop();
-    session_proxy_->dettach();
-    session_.reset();
+    session_proxy_->stopAndDettach();
+    task_runner_->deleteSoon(std::move(session_));
 
     LOG(LS_INFO) << "Session process is detached";
 
     if (state_ == State::STOPPING)
         return;
 
-    session_attach_timer_.start(
-        std::chrono::minutes(1), std::bind(&DesktopSessionManager::onErrorOccurred, this));
+    session_attach_timer_.start(std::chrono::minutes(1), [this]()
+    {
+        LOG(LS_ERROR) << "Timeout while waiting for session";
+        onErrorOccurred();
+    });
 
     // The real session process has ended. We create a temporary fake session.
-    session_ = std::make_unique<DesktopSessionFake>(this);
-    session_proxy_->attach(session_.get());
-    session_->start();
+    session_ = std::make_unique<DesktopSessionFake>(task_runner_, this);
+    session_proxy_->attachAndStart(session_.get());
 }
 
 std::shared_ptr<DesktopSessionProxy> DesktopSessionManager::sessionProxy() const
@@ -106,14 +125,26 @@ std::shared_ptr<DesktopSessionProxy> DesktopSessionManager::sessionProxy() const
 
 void DesktopSessionManager::onNewConnection(std::unique_ptr<ipc::Channel> channel)
 {
+    if (DesktopSessionProcess::filePath() != channel->peerFilePath())
+    {
+        LOG(LS_ERROR) << "An attempt was made to connect from an unknown application";
+        return;
+    }
+
+    LOG(LS_INFO) << "Session process successfully connected";
+
     session_attach_timer_.stop();
-    task_runner_->deleteSoon(server_.release());
+
+    if (server_)
+    {
+        server_->stop();
+        task_runner_->deleteSoon(std::move(server_));
+    }
 
     session_ = std::make_unique<DesktopSessionIpc>(std::move(channel), this);
-    session_proxy_->attach(session_.get());
 
     state_ = State::ATTACHED;
-    session_->start();
+    session_proxy_->attachAndStart(session_.get());
 }
 
 void DesktopSessionManager::onErrorOccurred()
@@ -122,7 +153,7 @@ void DesktopSessionManager::onErrorOccurred()
         return;
 
     state_ = State::STOPPING;
-    dettachSession();
+    dettachSession(FROM_HERE);
     state_ = State::STOPPED;
 }
 
@@ -133,7 +164,7 @@ void DesktopSessionManager::onDesktopSessionStarted()
 
 void DesktopSessionManager::onDesktopSessionStopped()
 {
-    dettachSession();
+    dettachSession(FROM_HERE);
 }
 
 void DesktopSessionManager::onScreenCaptured(const desktop::Frame& frame)

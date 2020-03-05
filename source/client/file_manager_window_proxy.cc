@@ -27,12 +27,13 @@ namespace client {
 class FileManagerWindowProxy::Impl : public std::enable_shared_from_this<Impl>
 {
 public:
-    Impl(std::shared_ptr<base::TaskRunner>& ui_task_runner, FileManagerWindow* file_manager_window);
+    Impl(std::shared_ptr<base::TaskRunner> ui_task_runner, FileManagerWindow* file_manager_window);
     ~Impl();
 
     void dettach();
 
     void start(std::shared_ptr<FileControlProxy> file_control_proxy);
+    void onErrorOccurred(proto::FileError error_code);
     void onDriveList(common::FileTask::Target target,
                      proto::FileError error_code,
                      const proto::DriveList& drive_list);
@@ -50,8 +51,8 @@ private:
 };
 
 FileManagerWindowProxy::Impl::Impl(
-    std::shared_ptr<base::TaskRunner>& ui_task_runner, FileManagerWindow* file_manager_window)
-    : ui_task_runner_(ui_task_runner),
+    std::shared_ptr<base::TaskRunner> ui_task_runner, FileManagerWindow* file_manager_window)
+    : ui_task_runner_(std::move(ui_task_runner)),
       file_manager_window_(file_manager_window)
 {
     DCHECK(ui_task_runner_);
@@ -85,6 +86,19 @@ void FileManagerWindowProxy::Impl::start(std::shared_ptr<FileControlProxy> file_
 
     if (file_manager_window_)
         file_manager_window_->start(file_manager_proxy);
+}
+
+void FileManagerWindowProxy::Impl::onErrorOccurred(proto::FileError error_code)
+{
+    if (!ui_task_runner_->belongsToCurrentThread())
+    {
+        ui_task_runner_->postTask(
+            std::bind(&Impl::onErrorOccurred, shared_from_this(), error_code));
+        return;
+    }
+
+    if (file_manager_window_)
+        file_manager_window_->onErrorOccurred(error_code);
 }
 
 void FileManagerWindowProxy::Impl::onDriveList(
@@ -144,8 +158,8 @@ void FileManagerWindowProxy::Impl::onRename(
 }
 
 FileManagerWindowProxy::FileManagerWindowProxy(
-    std::shared_ptr<base::TaskRunner>& ui_task_runner, FileManagerWindow* file_manager_window)
-    : impl_(std::make_shared<Impl>(ui_task_runner, file_manager_window))
+    std::shared_ptr<base::TaskRunner> ui_task_runner, FileManagerWindow* file_manager_window)
+    : impl_(std::make_shared<Impl>(std::move(ui_task_runner), file_manager_window))
 {
     // Nothing
 }
@@ -157,18 +171,23 @@ FileManagerWindowProxy::~FileManagerWindowProxy()
 
 // static
 std::unique_ptr<FileManagerWindowProxy> FileManagerWindowProxy::create(
-    std::shared_ptr<base::TaskRunner>& ui_task_runner, FileManagerWindow* file_manager_window)
+    std::shared_ptr<base::TaskRunner> ui_task_runner, FileManagerWindow* file_manager_window)
 {
     if (!ui_task_runner || !file_manager_window)
         return nullptr;
 
     return std::unique_ptr<FileManagerWindowProxy>(
-        new FileManagerWindowProxy(ui_task_runner, file_manager_window));
+        new FileManagerWindowProxy(std::move(ui_task_runner), file_manager_window));
 }
 
 void FileManagerWindowProxy::start(std::shared_ptr<FileControlProxy> file_control_proxy)
 {
     impl_->start(file_control_proxy);
+}
+
+void FileManagerWindowProxy::onErrorOccurred(proto::FileError error_code)
+{
+    impl_->onErrorOccurred(error_code);
 }
 
 void FileManagerWindowProxy::onDriveList(

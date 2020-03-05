@@ -19,12 +19,10 @@
 #ifndef HOST__USER_SESSION_MANAGER_H
 #define HOST__USER_SESSION_MANAGER_H
 
-#include "base/win/session_id.h"
+#include "base/session_id.h"
 #include "base/win/session_status.h"
 #include "host/user_session.h"
 #include "ipc/ipc_server.h"
-
-#include <list>
 
 namespace host {
 
@@ -47,7 +45,7 @@ public:
     };
 
     bool start(Delegate* delegate);
-    void setSessionEvent(base::win::SessionStatus status, base::win::SessionId session_id);
+    void setSessionEvent(base::win::SessionStatus status, base::SessionId session_id);
     void addNewSession(std::unique_ptr<ClientSession> client_session);
     UserList userList() const;
 
@@ -58,14 +56,16 @@ protected:
 
     // UserSession::Delegate implementation.
     void onUserSessionStarted() override;
+    void onUserSessionDettached() override;
     void onUserSessionFinished() override;
 
 private:
-    void startSessionProcess(base::win::SessionId session_id);
+    void startSessionProcess(base::SessionId session_id);
+    void addUserSession(base::SessionId session_id, std::unique_ptr<ipc::Channel> channel);
 
     std::shared_ptr<base::TaskRunner> task_runner_;
     std::unique_ptr<ipc::Server> ipc_server_;
-    std::list<std::unique_ptr<UserSession>> sessions_;
+    std::vector<std::unique_ptr<UserSession>> sessions_;
     Delegate* delegate_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(UserSessionManager);
